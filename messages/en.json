@@ -7,8 +7,6 @@
     "turn": "{name}'s turn",
     "winProbability": "{name}'s Win Probability",
     "check": "Check",
-    "thinking": "Thinking…",
-    "move": "Move {moveNumber}",
     "gameOver": {
       "checkmate": "Checkmate — {winner} wins",
       "stalemate": "Stalemate",

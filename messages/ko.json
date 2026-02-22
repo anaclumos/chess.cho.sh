@@ -7,8 +7,6 @@
     "turn": "{name}의 차례",
     "winProbability": "{name} 이길 확률",
     "check": "체크",
-    "thinking": "생각 중…",
-    "move": "{moveNumber}수째",
     "gameOver": {
       "checkmate": "체크메이트 — {winner} 승리",
       "stalemate": "스테일메이트",

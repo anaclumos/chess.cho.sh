@@ -23,19 +23,7 @@ interface StatusBarProps {
 }
 
 const ITEM =
-  'inline-flex items-center gap-1.5 rounded-[4px] px-2 py-0.5 whitespace-nowrap transition-colors hover:bg-white/6'
-
-function getMoveNumber(history: Move[]): number {
-  return Math.floor(history.length / 2) + 1
-}
-
-function getLastMove(history: Move[]): string | null {
-  if (history.length === 0) {
-    return null
-  }
-  const last = history.at(-1)
-  return last?.san ?? null
-}
+  'inline-flex items-center gap-2 rounded-[6px] px-2.5 py-1 whitespace-nowrap transition-colors hover:bg-white/6'
 
 function dotClassName(turn: 'w' | 'b', isAiThinking: boolean): string {
   if (isAiThinking) {
@@ -62,8 +50,6 @@ export function StatusBar({
   blackName,
 }: StatusBarProps) {
   const t = useTranslations('StatusBar')
-  const moveNumber = getMoveNumber(history)
-  const lastMove = getLastMove(history)
 
   const whitePercent = evaluation ? evalToWhitePercent(evaluation) : null
   const locale = useLocale()
@@ -83,7 +69,7 @@ export function StatusBar({
   }
 
   return (
-    <div className="absolute bottom-[max(12px,env(safe-area-inset-bottom,12px))] left-1/2 z-20 flex h-8 -translate-x-1/2 select-none items-center justify-between gap-1 rounded-full border border-border bg-white/6 px-3.5 font-sans text-muted-foreground text-xs shadow-[0_2px_8px_rgba(0,0,0,0.3)] backdrop-blur-[16px]">
+    <div className="absolute bottom-[max(16px,env(safe-area-inset-bottom,16px))] left-1/2 z-20 flex h-10 -translate-x-1/2 select-none items-center justify-between gap-1.5 rounded-full border border-border bg-white/6 px-4 font-sans text-muted-foreground text-sm shadow-[0_2px_8px_rgba(0,0,0,0.3)] backdrop-blur-[16px]">
       <div className="flex items-center gap-0.5">
         {isGameOver && gameOverReason ? (
           <span className={`${ITEM} font-medium text-foreground`}>
@@ -93,7 +79,7 @@ export function StatusBar({
           <>
             <span className={ITEM}>
               <span
-                className={`size-[7px] shrink-0 rounded-full ${dotClassName(turn, isAiThinking)}`}
+                className={`size-2 shrink-0 rounded-full ${dotClassName(turn, isAiThinking)}`}
               />
               {t('turn', { name: turn === 'w' ? whiteName : blackName })}
             </span>
@@ -116,12 +102,6 @@ export function StatusBar({
             {whitePercent}%
           </span>
         )}
-        {lastMove && (
-          <span className={`${ITEM} text-muted-foreground`}>{lastMove}</span>
-        )}
-        <span className={`${ITEM} text-muted-foreground`}>
-          {t('move', { moveNumber })}
-        </span>
         <GameDrawer
           canUndo={canUndo}
           history={history}
