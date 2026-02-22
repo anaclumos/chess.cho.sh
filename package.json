@@ -7,9 +7,6 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test": "vitest",
-    "test:run": "vitest run",
-    "test:e2e": "playwright test"
   },
   "dependencies": {
     "@react-three/drei": "^10.7.7",
@@ -33,21 +30,15 @@
     "vaul": "^1.1.2"
   },
   "devDependencies": {
-    "@playwright/test": "^1.58.2",
     "@tailwindcss/postcss": "^4",
-    "@testing-library/jest-dom": "^6.9.1",
-    "@testing-library/react": "^16.3.2",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "@types/three": "^0.183.1",
-    "@vitejs/plugin-react": "^5.1.4",
     "eslint": "^9",
     "eslint-config-next": "16.1.6",
-    "jsdom": "^28.1.0",
     "tailwindcss": "^4",
     "typescript": "^5",
-    "vitest": "^4.0.18"
   },
   "ignoreScripts": [
     "sharp",

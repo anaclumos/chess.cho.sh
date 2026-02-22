@@ -118,10 +118,11 @@ export function GameClient() {
 
   useEffect(() => {
     if (!pendingAiMove.current) return
-    if (turn !== 'b' || isGameOver) {
+    if (isGameOver) {
       pendingAiMove.current = false
       return
     }
+    if (turn !== 'b') return
     pendingAiMove.current = false
 
     let cancelled = false
