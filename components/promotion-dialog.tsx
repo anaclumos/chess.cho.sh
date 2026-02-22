@@ -1,6 +1,7 @@
 'use client'
 
 import { useTranslations } from 'next-intl'
+import { Button } from '@/components/ui/button'
 import {
   Dialog,
   DialogContent,
@@ -8,11 +9,10 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { Button } from '@/components/ui/button'
 
 interface PromotionDialogProps {
-  isOpen: boolean
   color: 'w' | 'b'
+  isOpen: boolean
   onSelect: (piece: string) => void
 }
 
@@ -23,19 +23,23 @@ const PIECES = [
   { key: 'n', labelKey: 'knight' as const, white: '♘', black: '♞' },
 ]
 
-export function PromotionDialog({ isOpen, color, onSelect }: PromotionDialogProps) {
+export function PromotionDialog({
+  isOpen,
+  color,
+  onSelect,
+}: PromotionDialogProps) {
   const t = useTranslations('PromotionDialog')
 
   return (
     <Dialog open={isOpen}>
       <DialogContent
-        showCloseButton={false}
-        onInteractOutside={(e) => e.preventDefault()}
-        onEscapeKeyDown={(e) => e.preventDefault()}
         className="w-auto max-w-fit gap-2 p-4"
+        onEscapeKeyDown={(e) => e.preventDefault()}
+        onInteractOutside={(e) => e.preventDefault()}
+        showCloseButton={false}
       >
         <DialogHeader>
-          <DialogTitle className="text-center text-[11px] font-medium uppercase tracking-widest text-muted-foreground">
+          <DialogTitle className="text-center font-medium text-[11px] text-muted-foreground uppercase tracking-widest">
             {t('title')}
           </DialogTitle>
           <DialogDescription className="sr-only">
@@ -45,11 +49,11 @@ export function PromotionDialog({ isOpen, color, onSelect }: PromotionDialogProp
         <div className="flex gap-2">
           {PIECES.map(({ key, labelKey, white, black }) => (
             <Button
-              key={key}
-              variant="outline"
-              onClick={() => onSelect(key)}
               aria-label={t(labelKey)}
               className="h-14 w-14 text-3xl"
+              key={key}
+              onClick={() => onSelect(key)}
+              variant="outline"
             >
               {color === 'w' ? white : black}
             </Button>

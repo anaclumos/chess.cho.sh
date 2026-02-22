@@ -1,5 +1,7 @@
 'use client'
 
+import { useLocale, useTranslations } from 'next-intl'
+import { Button } from '@/components/ui/button'
 import {
   Drawer,
   DrawerClose,
@@ -8,24 +10,23 @@ import {
   DrawerTitle,
   DrawerTrigger,
 } from '@/components/ui/drawer'
-import { Button } from '@/components/ui/button'
 import { Kbd } from '@/components/ui/kbd'
-import { cn } from '@/lib/utils'
-import { useTranslations, useLocale } from 'next-intl'
 import type { Locale } from '@/i18n/config'
 import { locales } from '@/i18n/config'
 import type { Move } from '@/lib/types'
+import { cn } from '@/lib/utils'
 
 interface GameDrawerProps {
   canUndo: boolean
-  isAiThinking: boolean
   history: Move[]
-  onUndo: () => void
+  isAiThinking: boolean
   onNewGame: () => void
+  onUndo: () => void
 }
 
 function switchLocale(current: Locale) {
   const next = locales.find((l) => l !== current) ?? locales[0]
+  // biome-ignore lint/suspicious/noDocumentCookie: Cookie Store API not universally supported
   document.cookie = `NEXT_LOCALE=${next}; path=/; max-age=${60 * 60 * 24 * 365}`
   const url = new URL(window.location.href)
   url.searchParams.set('lang', next)
@@ -48,14 +49,14 @@ function DrawerAction({
   return (
     <DrawerClose asChild>
       <Button
-        variant="ghost"
-        disabled={disabled}
-        onClick={onClick}
         className={cn(
           'h-auto w-full justify-between px-3 py-2.5',
           destructive &&
             'text-destructive hover:bg-destructive/10 hover:text-destructive'
         )}
+        disabled={disabled}
+        onClick={onClick}
+        variant="ghost"
       >
         {label}
         {kbd && <Kbd>{kbd}</Kbd>}
@@ -80,9 +81,9 @@ export function GameDrawer({
     <Drawer>
       <DrawerTrigger asChild>
         <button
-          type="button"
-          className="status-bar-action"
           aria-label="Options"
+          className="status-bar-action"
+          type="button"
         >
           ⋯
         </button>
@@ -92,23 +93,23 @@ export function GameDrawer({
           <DrawerHeader>
             <DrawerTitle>{t('title')}</DrawerTitle>
             {hasHistory && (
-              <p className="text-sm text-muted-foreground">
+              <p className="text-muted-foreground text-sm">
                 {t('movesPlayed', { count: moveCount })}
               </p>
             )}
           </DrawerHeader>
           <div className="flex flex-col gap-0.5 px-4 pb-6">
             <DrawerAction
+              destructive={hasHistory}
+              disabled={isAiThinking}
               label={t('newGame')}
               onClick={onNewGame}
-              disabled={isAiThinking}
-              destructive={hasHistory}
             />
             <DrawerAction
-              label={t('undo')}
-              kbd="⌘Z"
-              onClick={onUndo}
               disabled={!canUndo}
+              kbd="⌘Z"
+              label={t('undo')}
+              onClick={onUndo}
             />
             <div className="my-1 h-px bg-border" />
             <DrawerAction

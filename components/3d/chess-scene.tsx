@@ -1,26 +1,26 @@
 'use client'
 
-import { useMemo, useRef, useEffect, type ComponentRef } from 'react'
-import { PerspectiveCamera, OrbitControls } from '@react-three/drei'
-import { TOUCH, MOUSE } from 'three'
-import { BoardSquare } from './BoardSquare'
-import { ChessPiece } from './ChessPiece'
+import { OrbitControls, PerspectiveCamera } from '@react-three/drei'
+import { type ComponentRef, useEffect, useMemo, useRef } from 'react'
+import { MOUSE, TOUCH } from 'three'
+import { BoardSquare } from './board-square'
+import { ChessPiece } from './chess-piece'
 
 interface ChessSceneProps {
   fen: string
-  turn: 'w' | 'b'
   isAiThinking: boolean
   isGameOver: boolean
-  selectedSquare: string | null
   legalMoves: string[]
   onSquareClick: (square: string) => void
+  selectedSquare: string | null
+  turn: 'w' | 'b'
 }
 
 interface ParsedPiece {
-  type: string
+  col: number
   color: 'w' | 'b'
   row: number
-  col: number
+  type: string
 }
 
 interface TrackedPiece extends ParsedPiece {
@@ -36,7 +36,7 @@ function parseFen(fen: string): ParsedPiece[] {
     let col = 0
     for (const ch of ranks[rankIdx]) {
       if (ch >= '1' && ch <= '8') {
-        col += parseInt(ch)
+        col += Number.parseInt(ch, 10)
       } else {
         const row = 7 - rankIdx
         const color: 'w' | 'b' = ch === ch.toUpperCase() ? 'w' : 'b'
@@ -51,12 +51,69 @@ function parseFen(fen: string): ParsedPiece[] {
 
 function squareToCoords(square: string): { row: number; col: number } {
   const col = square.charCodeAt(0) - 97
-  const row = parseInt(square[1]) - 1
+  const row = Number.parseInt(square[1], 10) - 1
   return { row, col }
 }
 
 function coordsToSquare(row: number, col: number): string {
   return String.fromCharCode(97 + col) + (row + 1)
+}
+
+function matchExact(
+  newParsed: ParsedPiece[],
+  prev: TrackedPiece[],
+  usedPrev: Set<number>,
+  usedNew: Set<number>,
+  result: TrackedPiece[]
+): void {
+  for (let i = 0; i < newParsed.length; i++) {
+    for (let j = 0; j < prev.length; j++) {
+      if (usedPrev.has(j) || usedNew.has(i)) {
+        continue
+      }
+      const n = newParsed[i]
+      const p = prev[j]
+      if (
+        p.type === n.type &&
+        p.color === n.color &&
+        p.row === n.row &&
+        p.col === n.col
+      ) {
+        result.push({ ...n, id: p.id })
+        usedPrev.add(j)
+        usedNew.add(i)
+        break
+      }
+    }
+  }
+}
+
+function matchMoved(
+  newParsed: ParsedPiece[],
+  prev: TrackedPiece[],
+  usedPrev: Set<number>,
+  usedNew: Set<number>,
+  result: TrackedPiece[]
+): void {
+  for (let i = 0; i < newParsed.length; i++) {
+    if (usedNew.has(i)) {
+      continue
+    }
+    for (let j = 0; j < prev.length; j++) {
+      if (usedPrev.has(j)) {
+        continue
+      }
+      if (
+        prev[j].type === newParsed[i].type &&
+        prev[j].color === newParsed[i].color
+      ) {
+        result.push({ ...newParsed[i], id: prev[j].id })
+        usedPrev.add(j)
+        usedNew.add(i)
+        break
+      }
+    }
+  }
 }
 
 export function ChessScene({
@@ -75,43 +132,16 @@ export function ChessScene({
     const newParsed = parseFen(fen)
     const prev = prevTrackedRef.current
     const result: TrackedPiece[] = []
-
     const usedPrev = new Set<number>()
     const usedNew = new Set<number>()
 
-    // Pass 1: exact match (same type, color, and position — piece didn't move)
-    for (let i = 0; i < newParsed.length; i++) {
-      for (let j = 0; j < prev.length; j++) {
-        if (usedPrev.has(j) || usedNew.has(i)) continue
-        const n = newParsed[i]
-        const p = prev[j]
-        if (p.type === n.type && p.color === n.color && p.row === n.row && p.col === n.col) {
-          result.push({ ...n, id: p.id })
-          usedPrev.add(j)
-          usedNew.add(i)
-          break
-        }
-      }
-    }
+    matchExact(newParsed, prev, usedPrev, usedNew, result)
+    matchMoved(newParsed, prev, usedPrev, usedNew, result)
 
-    // Pass 2: same type+color but different position (piece moved)
     for (let i = 0; i < newParsed.length; i++) {
-      if (usedNew.has(i)) continue
-      for (let j = 0; j < prev.length; j++) {
-        if (usedPrev.has(j)) continue
-        if (prev[j].type === newParsed[i].type && prev[j].color === newParsed[i].color) {
-          result.push({ ...newParsed[i], id: prev[j].id })
-          usedPrev.add(j)
-          usedNew.add(i)
-          break
-        }
+      if (!usedNew.has(i)) {
+        result.push({ ...newParsed[i], id: `p${nextPieceId.current++}` })
       }
-    }
-
-    // Pass 3: new pieces (e.g. promotion)
-    for (let i = 0; i < newParsed.length; i++) {
-      if (usedNew.has(i)) continue
-      result.push({ ...newParsed[i], id: `p${nextPieceId.current++}` })
     }
 
     prevTrackedRef.current = result
@@ -131,7 +161,9 @@ export function ChessScene({
   const disabled = isAiThinking || isGameOver
 
   const selectedCoords = useMemo(() => {
-    if (!selectedSquare) return null
+    if (!selectedSquare) {
+      return null
+    }
     return squareToCoords(selectedSquare)
   }, [selectedSquare])
 
@@ -139,36 +171,42 @@ export function ChessScene({
 
   useEffect(() => {
     const controls = controlsRef.current
-    if (!controls) return
-    controls.mouseButtons = { LEFT: undefined, MIDDLE: MOUSE.ROTATE, RIGHT: MOUSE.ROTATE }
+    if (!controls) {
+      return
+    }
+    controls.mouseButtons = {
+      LEFT: undefined,
+      MIDDLE: MOUSE.ROTATE,
+      RIGHT: MOUSE.ROTATE,
+    }
     controls.touches = { ONE: undefined, TWO: TOUCH.DOLLY_ROTATE }
   }, [])
   return (
     <>
-      <color attach="background" args={['#000000']} />
-      <PerspectiveCamera makeDefault position={[0, 10, -7.5]} fov={45} />
+      <color args={['#000000']} attach="background" />
+      <PerspectiveCamera fov={45} makeDefault position={[0, 10, -7.5]} />
       <OrbitControls
-        ref={controlsRef}
-        enableRotate
         enablePan={false}
+        enableRotate
         enableZoom
-        minPolarAngle={Math.PI / 6}
         maxPolarAngle={Math.PI / 3}
+        minPolarAngle={Math.PI / 6}
+        ref={controlsRef}
       />
 
       <ambientLight intensity={0.5} />
       <directionalLight
-        position={[5, 8, 5]}
-        intensity={0.8}
         castShadow
-        shadow-mapSize={[2048, 2048]}
+        intensity={0.8}
+        position={[5, 8, 5]}
         shadow-bias={-0.0001}
+        shadow-mapSize={[2048, 2048]}
       />
-      <directionalLight position={[-3, 6, -3]} intensity={0.3} />
+      <directionalLight intensity={0.3} position={[-3, 6, -3]} />
 
       <mesh position={[0, -0.05, 0]} receiveShadow>
         <boxGeometry args={[8.6, 0.1, 8.6]} />
-        <meshStandardMaterial color="#654321" roughness={0.7} metalness={0.1} />
+        <meshStandardMaterial color="#654321" metalness={0.1} roughness={0.7} />
       </mesh>
 
       {Array.from({ length: 8 }, (_, row) =>
@@ -183,13 +221,13 @@ export function ChessScene({
 
           return (
             <BoardSquare
-              key={square}
-              row={row}
               col={col}
+              hasPiece={hasPiece}
               isLegalMove={isLegalMove}
               isSelected={isSelected}
-              hasPiece={hasPiece}
+              key={square}
               onClick={() => onSquareClick(square)}
+              row={row}
             />
           )
         })
@@ -201,19 +239,21 @@ export function ChessScene({
         const isSelected = selectedSquare === square
         return (
           <ChessPiece
-            key={piece.id}
-            type={piece.type}
             color={piece.color}
-            position={[piece.col - 3.5, 0.075, piece.row - 3.5]}
             isSelected={isSelected}
+            key={piece.id}
             onClick={() => {
-              if (disabled) return
+              if (disabled) {
+                return
+              }
               if (isOwn || legalMoveSet.has(square)) {
                 onSquareClick(square)
               } else {
                 onSquareClick('')
               }
             }}
+            position={[piece.col - 3.5, 0.075, piece.row - 3.5]}
+            type={piece.type}
           />
         )
       })}

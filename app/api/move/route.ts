@@ -1,7 +1,7 @@
-import { NextRequest, NextResponse } from 'next/server'
 import { Chess } from 'chess.js'
-import { getBestMove } from '@/lib/engine/stockfish'
+import { type NextRequest, NextResponse } from 'next/server'
 import { getPreset } from '@/lib/engine/difficulty'
+import { getBestMove } from '@/lib/engine/stockfish'
 
 export async function POST(request: NextRequest) {
   let body: { fen?: string }

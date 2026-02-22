@@ -1,17 +1,17 @@
 'use client'
 
-import { useMemo, useRef } from 'react'
-import { useFrame } from '@react-three/fiber'
-import { createPieceGeometry } from './piece-profiles'
 import type { ThreeEvent } from '@react-three/fiber'
+import { useFrame } from '@react-three/fiber'
+import { useMemo, useRef } from 'react'
 import type { Mesh } from 'three'
+import { createPieceGeometry } from './piece-profiles'
 
 interface ChessPieceProps {
-  type: string
   color: 'w' | 'b'
-  position: [number, number, number]
   isSelected: boolean
   onClick: () => void
+  position: [number, number, number]
+  type: string
 }
 
 const LERP_SPEED = 10
@@ -46,7 +46,9 @@ export function ChessPiece({
   const targetY = isSelected ? position[1] + 0.15 : position[1]
 
   useFrame((_, delta) => {
-    if (!meshRef.current) return
+    if (!meshRef.current) {
+      return
+    }
     const mesh = meshRef.current
 
     if (!initialized.current) {
@@ -74,11 +76,11 @@ export function ChessPiece({
 
   return (
     <mesh
-      ref={meshRef}
-      geometry={geometry}
       castShadow
-      receiveShadow
+      geometry={geometry}
       onPointerDown={handlePointerDown}
+      receiveShadow
+      ref={meshRef}
     >
       <meshStandardMaterial {...materialProps} />
     </mesh>

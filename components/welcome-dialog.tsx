@@ -1,7 +1,8 @@
 'use client'
 
-import { useState, useCallback } from 'react'
 import { useTranslations } from 'next-intl'
+import { useCallback, useState } from 'react'
+import { Button } from '@/components/ui/button'
 import {
   Dialog,
   DialogContent,
@@ -9,15 +10,18 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { Button } from '@/components/ui/button'
 
 interface WelcomeDialogProps {
-  isOpen: boolean
   defaultName: string
+  isOpen: boolean
   onSubmit: (name: string) => void
 }
 
-export function WelcomeDialog({ isOpen, defaultName, onSubmit }: WelcomeDialogProps) {
+export function WelcomeDialog({
+  isOpen,
+  defaultName,
+  onSubmit,
+}: WelcomeDialogProps) {
   const t = useTranslations('WelcomeDialog')
   const [name, setName] = useState(defaultName)
 
@@ -35,34 +39,30 @@ export function WelcomeDialog({ isOpen, defaultName, onSubmit }: WelcomeDialogPr
   return (
     <Dialog open={isOpen}>
       <DialogContent
-        showCloseButton={false}
-        onInteractOutside={(e) => e.preventDefault()}
-        onEscapeKeyDown={(e) => e.preventDefault()}
         className="w-full max-w-xs gap-3 p-5"
+        onEscapeKeyDown={(e) => e.preventDefault()}
+        onInteractOutside={(e) => e.preventDefault()}
+        showCloseButton={false}
       >
         <DialogHeader>
           <DialogTitle className="text-center text-base">
             {t('title')}
           </DialogTitle>
-          <DialogDescription className="text-center text-sm text-muted-foreground">
+          <DialogDescription className="text-center text-muted-foreground text-sm">
             {t('description')}
           </DialogDescription>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="flex flex-col gap-3">
+        <form className="flex flex-col gap-3" onSubmit={handleSubmit}>
           <input
-            type="text"
-            value={name}
+            autoComplete="name"
+            autoFocus
+            className="h-9 w-full rounded-md border border-input bg-transparent px-3 text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
             onChange={(e) => setName(e.target.value)}
             placeholder={t('namePlaceholder')}
-            autoFocus
-            autoComplete="name"
-            className="h-9 w-full rounded-md border border-input bg-transparent px-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+            type="text"
+            value={name}
           />
-          <Button
-            type="submit"
-            disabled={!name.trim()}
-            className="w-full"
-          >
+          <Button className="w-full" disabled={!name.trim()} type="submit">
             {t('play')}
           </Button>
         </form>

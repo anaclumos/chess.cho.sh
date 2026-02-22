@@ -1,12 +1,12 @@
 export interface GameState {
-  currentFen: string
-  history: Move[]
-  isGameOver: boolean
-  gameOverReason: GameOverReason | null
-  turn: 'w' | 'b'
-  isAiThinking: boolean
   boardOrientation: 'white' | 'black'
+  currentFen: string
+  gameOverReason: GameOverReason | null
+  history: Move[]
+  isAiThinking: boolean
+  isGameOver: boolean
   isInCheck: boolean
+  turn: 'w' | 'b'
 }
 
 export type GameOverReason =
@@ -17,15 +17,14 @@ export type GameOverReason =
   | 'insufficient-material'
 
 export interface Move {
-  from: string
-  to: string
-  san: string
-  color: 'w' | 'b'
-  piece: string
   captured?: string
+  color: 'w' | 'b'
+  from: string
+  piece: string
   promotion?: string
+  san: string
+  to: string
 }
-
 
 export interface Evaluation {
   type: 'cp' | 'mate'
@@ -33,42 +32,42 @@ export interface Evaluation {
 }
 
 export interface DifficultyPreset {
-  name: string
-  label: string
-  skillLevel: number // Stockfish Skill Level 0-20
-  movetime: number // ms for UCI go movetime
   description: string
+  label: string
+  movetime: number // ms for UCI go movetime
+  name: string
+  skillLevel: number // Stockfish Skill Level 0-20
 }
 
 export interface MoveRequest {
-  fen: string
   difficulty: string
+  fen: string
 }
 
 export interface MoveResponse {
   bestMove: string | null
-  from: string
-  to: string
-  promotion?: string
-  isGameOver: boolean
   evaluation?: Evaluation
+  from: string
+  isGameOver: boolean
+  promotion?: string
+  to: string
 }
 
 export type UCICommand = string
 
 export interface UCIResponse {
-  type: 'uciok' | 'readyok' | 'bestmove' | 'info' | 'other'
-  raw: string
   bestMove?: string
   from?: string
-  to?: string
   promotion?: string
+  raw: string
+  to?: string
+  type: 'uciok' | 'readyok' | 'bestmove' | 'info' | 'other'
 }
 
-export function isDifficultyPreset(
-  value: unknown
-): value is DifficultyPreset {
-  if (!value || typeof value !== 'object') return false
+export function isDifficultyPreset(value: unknown): value is DifficultyPreset {
+  if (!value || typeof value !== 'object') {
+    return false
+  }
   const v = value as Record<string, unknown>
   return (
     typeof v.name === 'string' &&
@@ -80,7 +79,9 @@ export function isDifficultyPreset(
 }
 
 export function isMoveResponse(value: unknown): value is MoveResponse {
-  if (!value || typeof value !== 'object') return false
+  if (!value || typeof value !== 'object') {
+    return false
+  }
   const v = value as Record<string, unknown>
   return (
     (v.bestMove === null || typeof v.bestMove === 'string') &&

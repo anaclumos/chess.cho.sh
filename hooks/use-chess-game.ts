@@ -1,7 +1,7 @@
 'use client'
 
-import { useState, useRef, useCallback, useReducer } from 'react'
 import { Chess, type Square } from 'chess.js'
+import { useCallback, useReducer, useRef, useState } from 'react'
 import type { GameOverReason, Move } from '@/lib/types'
 
 function detectGameOver(chess: Chess): {
@@ -12,38 +12,48 @@ function detectGameOver(chess: Chess): {
     return { isGameOver: false, gameOverReason: null }
   }
 
-  if (chess.isCheckmate()) return { isGameOver: true, gameOverReason: 'checkmate' }
-  if (chess.isStalemate()) return { isGameOver: true, gameOverReason: 'stalemate' }
-  if (chess.isThreefoldRepetition()) return { isGameOver: true, gameOverReason: 'threefold-repetition' }
-  if (chess.isInsufficientMaterial()) return { isGameOver: true, gameOverReason: 'insufficient-material' }
-  if (chess.isDraw()) return { isGameOver: true, gameOverReason: '50-move-rule' }
+  if (chess.isCheckmate()) {
+    return { isGameOver: true, gameOverReason: 'checkmate' }
+  }
+  if (chess.isStalemate()) {
+    return { isGameOver: true, gameOverReason: 'stalemate' }
+  }
+  if (chess.isThreefoldRepetition()) {
+    return { isGameOver: true, gameOverReason: 'threefold-repetition' }
+  }
+  if (chess.isInsufficientMaterial()) {
+    return { isGameOver: true, gameOverReason: 'insufficient-material' }
+  }
+  if (chess.isDraw()) {
+    return { isGameOver: true, gameOverReason: '50-move-rule' }
+  }
 
   return { isGameOver: true, gameOverReason: 'stalemate' }
 }
 
 export interface UseChessGameReturn {
-  fen: string
-  history: Move[]
-  isGameOver: boolean
-  gameOverReason: GameOverReason | null
-  turn: 'w' | 'b'
-  isAiThinking: boolean
-  isInCheck: boolean
-  selectedSquare: string | null
-  legalMoves: string[]
-  makeMove: (from: string, to: string, promotion?: string) => boolean
-  undoMove: () => boolean
-  newGame: () => void
-  selectSquare: (square: string) => void
-  clearSelection: () => void
-  setAiThinking: (thinking: boolean) => void
-  isPromotion: (from: string, to: string) => boolean
   applyAiMove: (from: string, to: string, promotion?: string) => boolean
+  clearSelection: () => void
+  fen: string
+  gameOverReason: GameOverReason | null
+  history: Move[]
+  isAiThinking: boolean
+  isGameOver: boolean
+  isInCheck: boolean
+  isPromotion: (from: string, to: string) => boolean
+  legalMoves: string[]
   loadFen: (fen: string) => void
+  makeMove: (from: string, to: string, promotion?: string) => boolean
+  newGame: () => void
+  selectedSquare: string | null
+  selectSquare: (square: string) => void
+  setAiThinking: (thinking: boolean) => void
+  turn: 'w' | 'b'
+  undoMove: () => boolean
 }
 
-export function useChessGame(): UseChessGameReturn {
-  const gameRef = useRef(new Chess())
+export function useChessGame(initialFen?: string): UseChessGameReturn {
+  const gameRef = useRef(new Chess(initialFen))
   const [, forceRender] = useReducer((x: number) => x + 1, 0)
   const [isAiThinking, setIsAiThinkingState] = useState(false)
   const [selectedSquare, setSelectedSquare] = useState<string | null>(null)
@@ -101,7 +111,9 @@ export function useChessGame(): UseChessGameReturn {
   )
 
   const undoMove = useCallback((): boolean => {
-    if (gameRef.current.history().length < 2) return false
+    if (gameRef.current.history().length < 2) {
+      return false
+    }
 
     gameRef.current.undo()
     gameRef.current.undo()
@@ -124,7 +136,10 @@ export function useChessGame(): UseChessGameReturn {
 
   const isPromotionCheck = useCallback((from: string, to: string): boolean => {
     try {
-      const moves = gameRef.current.moves({ square: from as Square, verbose: true })
+      const moves = gameRef.current.moves({
+        square: from as Square,
+        verbose: true,
+      })
       return moves.some((m) => m.to === to && m.isPromotion())
     } catch {
       return false
@@ -137,7 +152,9 @@ export function useChessGame(): UseChessGameReturn {
       setSelectedSquare(null)
       setLegalMoves([])
       forceRender()
-    } catch {}
+    } catch {
+      /* invalid FEN, silently ignore */
+    }
   }, [])
 
   // eslint-disable-next-line react-hooks/refs -- intentional: ref is kept in sync via forceRender()

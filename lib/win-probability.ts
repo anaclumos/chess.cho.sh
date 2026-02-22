@@ -10,7 +10,7 @@ import type { Evaluation } from '@/lib/types'
  *   -1 = Black winning (100%)
  *    0 = Equal (50/50)
  */
-const MULTIPLIER = -0.00368208
+const MULTIPLIER = -0.003_682_08
 
 function rawWinningChances(cp: number): number {
   return 2 / (1 + Math.exp(MULTIPLIER * cp)) - 1

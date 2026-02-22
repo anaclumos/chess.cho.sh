@@ -4,10 +4,10 @@ import { useTranslations } from 'next-intl'
 import type { GameOverReason } from '@/lib/types'
 
 interface GameStatusProps {
-  isGameOver: boolean
   gameOverReason: GameOverReason | null
-  turn: 'w' | 'b'
+  isGameOver: boolean
   isInCheck: boolean
+  turn: 'w' | 'b'
 }
 
 export function GameStatus({
@@ -23,8 +23,8 @@ export function GameStatus({
     const winner = turn === 'w' ? t('black') : t('white')
 
     const reasonMap: Record<GameOverReason, string> = {
-      'checkmate': t('checkmate', { winner }),
-      'stalemate': t('stalemate'),
+      checkmate: t('checkmate', { winner }),
+      stalemate: t('stalemate'),
       'threefold-repetition': t('threefoldRepetition'),
       '50-move-rule': t('fiftyMoveRule'),
       'insufficient-material': t('insufficientMaterial'),
@@ -33,7 +33,7 @@ export function GameStatus({
 
     return (
       <output
-        className={`block rounded-xl px-3 py-2 text-center text-sm font-semibold shadow-lg backdrop-blur-sm ${
+        className={`block rounded-xl px-3 py-2 text-center font-semibold text-sm shadow-lg backdrop-blur-sm ${
           isCheckmate
             ? 'bg-red-100/90 text-red-800'
             : 'bg-amber-100/90 text-amber-800'
@@ -46,9 +46,7 @@ export function GameStatus({
 
   if (isInCheck) {
     return (
-      <output
-        className="block rounded-xl bg-orange-100/90 px-3 py-2 text-center text-sm font-semibold text-orange-700 shadow-lg backdrop-blur-sm"
-      >
+      <output className="block rounded-xl bg-orange-100/90 px-3 py-2 text-center font-semibold text-orange-700 text-sm shadow-lg backdrop-blur-sm">
         {t('check')}
       </output>
     )

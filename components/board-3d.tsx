@@ -1,16 +1,16 @@
 'use client'
 
 import { Canvas } from '@react-three/fiber'
-import { ChessScene } from './3d/ChessScene'
+import { ChessScene } from './3d/chess-scene'
 
 interface Board3DProps {
   fen: string
-  turn: 'w' | 'b'
   isAiThinking: boolean
   isGameOver: boolean
-  selectedSquare: string | null
   legalMoves: string[]
   onSquareClick: (square: string) => void
+  selectedSquare: string | null
+  turn: 'w' | 'b'
 }
 
 export function Board3D({
@@ -26,19 +26,23 @@ export function Board3D({
     <div className="h-full w-full">
       <Canvas
         dpr={[1, 2]}
+        gl={{
+          antialias: true,
+          alpha: false,
+          powerPreference: 'high-performance',
+        }}
+        onPointerMissed={() => onSquareClick('')}
         shadows
         style={{ touchAction: 'none' }}
-        gl={{ antialias: true, alpha: false, powerPreference: 'high-performance' }}
-        onPointerMissed={() => onSquareClick('')}
       >
         <ChessScene
           fen={fen}
-          turn={turn}
           isAiThinking={isAiThinking}
           isGameOver={isGameOver}
-          selectedSquare={selectedSquare}
           legalMoves={legalMoves}
           onSquareClick={onSquareClick}
+          selectedSquare={selectedSquare}
+          turn={turn}
         />
       </Canvas>
     </div>

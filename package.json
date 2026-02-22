@@ -5,7 +5,9 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start"
+    "start": "next start",
+    "check": "ultracite check",
+    "fix": "ultracite fix"
   },
   "dependencies": {
     "@react-three/drei": "^10.7.7",
@@ -29,13 +31,15 @@
     "vaul": "^1.1.2"
   },
   "devDependencies": {
+    "@biomejs/biome": "2.4.0",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "@types/three": "^0.183.1",
     "tailwindcss": "^4",
-    "typescript": "^5"
+    "typescript": "^5",
+    "ultracite": "7.2.3"
   },
   "ignoreScripts": [
     "sharp",

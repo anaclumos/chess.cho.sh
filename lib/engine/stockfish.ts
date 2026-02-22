@@ -1,11 +1,12 @@
-import { spawn, type ChildProcess } from 'child_process'
-import { EventEmitter } from 'events'
+import { type ChildProcess, spawn } from 'node:child_process'
+import { EventEmitter } from 'node:events'
 import { Chess } from 'chess.js'
 import type { DifficultyPreset, Evaluation, MoveResponse } from '@/lib/types'
 
-const STOCKFISH_PATH =
-  process.env.STOCKFISH_PATH ?? '/usr/local/bin/stockfish'
+const STOCKFISH_PATH = process.env.STOCKFISH_PATH ?? '/usr/local/bin/stockfish'
 const TIMEOUT_MS = 10_000
+const SCORE_MATE_RE = /\bscore mate (-?\d+)/
+const SCORE_CP_RE = /\bscore cp (-?\d+)/
 
 let proc: ChildProcess | null = null
 let lineEmitter = new EventEmitter()
@@ -22,7 +23,9 @@ function startProcess(): ChildProcess {
     buffer = lines.pop() ?? ''
     for (const line of lines) {
       const trimmed = line.trim()
-      if (trimmed) lineEmitter.emit('line', trimmed)
+      if (trimmed) {
+        lineEmitter.emit('line', trimmed)
+      }
     }
   })
 
@@ -38,7 +41,7 @@ function startProcess(): ChildProcess {
 }
 
 function write(cmd: string): void {
-  proc?.stdin?.write(cmd + '\n')
+  proc?.stdin?.write(`${cmd}\n`)
 }
 
 function waitForLine(target: string): Promise<void> {
@@ -60,6 +63,46 @@ function waitForLine(target: string): Promise<void> {
   })
 }
 
+function parseEvalFromInfo(line: string): Evaluation | undefined {
+  const mateMatch = line.match(SCORE_MATE_RE)
+  if (mateMatch) {
+    return { type: 'mate', value: Number.parseInt(mateMatch[1], 10) }
+  }
+  const cpMatch = line.match(SCORE_CP_RE)
+  if (cpMatch) {
+    return { type: 'cp', value: Number.parseInt(cpMatch[1], 10) }
+  }
+  return undefined
+}
+
+function parseBestMove(
+  line: string,
+  lastEval: Evaluation | undefined
+): MoveResponse {
+  const parts = line.split(' ')
+  const move = parts[1]
+  if (!move || move === '(none)') {
+    return {
+      bestMove: null,
+      from: '',
+      to: '',
+      isGameOver: true,
+      evaluation: lastEval,
+    }
+  }
+  const from = move.slice(0, 2)
+  const to = move.slice(2, 4)
+  const promotion = move.length === 5 ? move[4] : undefined
+  return {
+    bestMove: move,
+    from,
+    to,
+    promotion,
+    isGameOver: false,
+    evaluation: lastEval,
+  }
+}
+
 function waitForBestMove(): Promise<MoveResponse> {
   return new Promise((resolve, reject) => {
     let lastEval: Evaluation | undefined
@@ -68,37 +111,24 @@ function waitForBestMove(): Promise<MoveResponse> {
       reject(new Error('Stockfish timeout: no bestmove within 10s'))
     }, TIMEOUT_MS)
     function handler(line: string) {
-      // Capture evaluation from info lines during search
       if (line.startsWith('info') && line.includes(' score ')) {
-        const mateMatch = line.match(/\bscore mate (-?\d+)/)
-        const cpMatch = line.match(/\bscore cp (-?\d+)/)
-        if (mateMatch) {
-          lastEval = { type: 'mate', value: parseInt(mateMatch[1], 10) }
-        } else if (cpMatch) {
-          lastEval = { type: 'cp', value: parseInt(cpMatch[1], 10) }
-        }
+        lastEval = parseEvalFromInfo(line) ?? lastEval
       }
-
-      if (!line.startsWith('bestmove')) return
-      clearTimeout(timer)
-      lineEmitter.removeListener('line', handler)
-      const parts = line.split(' ')
-      const move = parts[1]
-      if (!move || move === '(none)') {
-        resolve({ bestMove: null, from: '', to: '', isGameOver: true, evaluation: lastEval })
+      if (!line.startsWith('bestmove')) {
         return
       }
-      const from = move.slice(0, 2)
-      const to = move.slice(2, 4)
-      const promotion = move.length === 5 ? move[4] : undefined
-      resolve({ bestMove: move, from, to, promotion, isGameOver: false, evaluation: lastEval })
+      clearTimeout(timer)
+      lineEmitter.removeListener('line', handler)
+      resolve(parseBestMove(line, lastEval))
     }
     lineEmitter.on('line', handler)
   })
 }
 
 async function ensureReady(): Promise<void> {
-  if (proc) return
+  if (proc) {
+    return
+  }
   proc = startProcess()
   write('uci')
   await waitForLine('uciok')

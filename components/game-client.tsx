@@ -1,23 +1,31 @@
 'use client'
 
-import { useState, useCallback, useEffect, useRef } from 'react'
 import dynamic from 'next/dynamic'
-import { useQueryState, parseAsString } from 'nuqs'
 import { useTranslations } from 'next-intl'
-import { StatusBar } from '@/components/StatusBar'
-import { PromotionDialog } from '@/components/PromotionDialog'
-import { useChessGame } from '@/hooks/useChessGame'
-import { WelcomeDialog } from '@/components/WelcomeDialog'
+import { parseAsString, useQueryState } from 'nuqs'
+import { useCallback, useEffect, useRef, useState } from 'react'
+import { PromotionDialog } from '@/components/promotion-dialog'
+import { StatusBar } from '@/components/status-bar'
+import { WelcomeDialog } from '@/components/welcome-dialog'
+import { useChessGame } from '@/hooks/use-chess-game'
 import type { Evaluation } from '@/lib/types'
 
 const STARTING_FEN = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1'
 
 const Board3D = dynamic(
-  () => import('@/components/Board3D').then((m) => m.Board3D),
+  () => import('@/components/board-3d').then((m) => m.Board3D),
   { ssr: false }
 )
 
 export function GameClient() {
+  const [playerName, setPlayerName] = useQueryState(
+    'name',
+    parseAsString.withDefault('')
+  )
+  const [urlFen, setUrlFen] = useQueryState(
+    'fen',
+    parseAsString.withDefault(STARTING_FEN).withOptions({ history: 'replace' })
+  )
   const {
     fen,
     turn,
@@ -36,37 +44,15 @@ export function GameClient() {
     isPromotion,
     applyAiMove,
     newGame,
-    loadFen,
-  } = useChessGame()
-  const pendingAiMove = useRef(false)
+  } = useChessGame(urlFen)
+  const pendingAiMove = useRef(urlFen.split(' ')[1] === 'b')
   const [pendingPromotion, setPendingPromotion] = useState<{
     from: string
     to: string
   } | null>(null)
   const [evaluation, setEvaluation] = useState<Evaluation | null>(null)
-  const [playerName, setPlayerName] = useQueryState('name', parseAsString.withDefault(''))
-  const [urlFen, setUrlFen] = useQueryState(
-    'fen',
-    parseAsString.withDefault(STARTING_FEN).withOptions({ history: 'replace' })
-  )
   const tPlayers = useTranslations('Players')
-
   useEffect(() => {
-    if (urlFen !== STARTING_FEN) {
-      loadFen(urlFen)
-      if (urlFen.split(' ')[1] === 'b') {
-        pendingAiMove.current = true
-      }
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
-
-  const skipFenSync = useRef(true)
-  useEffect(() => {
-    if (skipFenSync.current) {
-      skipFenSync.current = false
-      return
-    }
     setUrlFen(fen)
   }, [fen, setUrlFen])
 
@@ -99,7 +85,14 @@ export function GameClient() {
 
       selectSquare(square)
     },
-    [selectedSquare, legalMoves, makeMove, selectSquare, clearSelection, isPromotion]
+    [
+      selectedSquare,
+      legalMoves,
+      makeMove,
+      selectSquare,
+      clearSelection,
+      isPromotion,
+    ]
   )
 
   const handlePromotionSelect = useCallback(
@@ -117,12 +110,16 @@ export function GameClient() {
   )
 
   useEffect(() => {
-    if (!pendingAiMove.current) return
+    if (!pendingAiMove.current) {
+      return
+    }
     if (isGameOver) {
       pendingAiMove.current = false
       return
     }
-    if (turn !== 'b') return
+    if (turn !== 'b') {
+      return
+    }
     pendingAiMove.current = false
 
     let cancelled = false
@@ -134,7 +131,9 @@ export function GameClient() {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ fen }),
         })
-        if (!res.ok || cancelled) return
+        if (!res.ok || cancelled) {
+          return
+        }
         const data = await res.json()
         if (!cancelled) {
           applyAiMove(data.from, data.to, data.promotion)
@@ -143,7 +142,9 @@ export function GameClient() {
           }
         }
       } finally {
-        if (!cancelled) setAiThinking(false)
+        if (!cancelled) {
+          setAiThinking(false)
+        }
       }
     }
 
@@ -171,37 +172,37 @@ export function GameClient() {
       <div className="absolute inset-0">
         <Board3D
           fen={fen}
-          turn={turn}
           isAiThinking={isAiThinking}
           isGameOver={isGameOver}
-          selectedSquare={selectedSquare}
           legalMoves={legalMoves}
           onSquareClick={handleSquareClick}
+          selectedSquare={selectedSquare}
+          turn={turn}
         />
       </div>
 
       <StatusBar
-        turn={turn}
-        isInCheck={isInCheck}
-        isGameOver={isGameOver}
-        gameOverReason={gameOverReason}
-        isAiThinking={isAiThinking}
-        history={history}
-        canUndo={canUndo}
-        onUndo={undoMove}
-        onNewGame={newGame}
-        evaluation={evaluation}
-        whiteName={playerName}
         blackName={tPlayers('black')}
+        canUndo={canUndo}
+        evaluation={evaluation}
+        gameOverReason={gameOverReason}
+        history={history}
+        isAiThinking={isAiThinking}
+        isGameOver={isGameOver}
+        isInCheck={isInCheck}
+        onNewGame={newGame}
+        onUndo={undoMove}
+        turn={turn}
+        whiteName={playerName}
       />
       <PromotionDialog
-        isOpen={pendingPromotion !== null}
         color={turn}
+        isOpen={pendingPromotion !== null}
         onSelect={handlePromotionSelect}
       />
       <WelcomeDialog
-        isOpen={!playerName}
         defaultName={playerName}
+        isOpen={!playerName}
         onSubmit={handleNameSubmit}
       />
     </div>

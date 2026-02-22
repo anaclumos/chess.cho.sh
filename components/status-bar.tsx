@@ -1,25 +1,25 @@
 'use client'
 
-import { useTranslations, useLocale } from 'next-intl'
-import { GameDrawer } from '@/components/GameDrawer'
+import { josa } from 'es-hangul'
+import { useLocale, useTranslations } from 'next-intl'
+import { GameDrawer } from '@/components/game-drawer'
 import { Progress } from '@/components/ui/progress'
 import type { Evaluation, GameOverReason, Move } from '@/lib/types'
-import { evalToWhitePercent } from '@/lib/winProbability'
-import { josa } from 'es-hangul'
+import { evalToWhitePercent } from '@/lib/win-probability'
 
 interface StatusBarProps {
-  turn: 'w' | 'b'
-  isInCheck: boolean
-  isGameOver: boolean
-  gameOverReason: GameOverReason | null
-  isAiThinking: boolean
-  history: Move[]
-  canUndo: boolean
-  onUndo: () => void
-  onNewGame: () => void
-  evaluation: Evaluation | null
-  whiteName: string
   blackName: string
+  canUndo: boolean
+  evaluation: Evaluation | null
+  gameOverReason: GameOverReason | null
+  history: Move[]
+  isAiThinking: boolean
+  isGameOver: boolean
+  isInCheck: boolean
+  onNewGame: () => void
+  onUndo: () => void
+  turn: 'w' | 'b'
+  whiteName: string
 }
 
 function getMoveNumber(history: Move[]): number {
@@ -27,8 +27,10 @@ function getMoveNumber(history: Move[]): number {
 }
 
 function getLastMove(history: Move[]): string | null {
-  if (history.length === 0) return null
-  const last = history[history.length - 1]
+  if (history.length === 0) {
+    return null
+  }
+  const last = history.at(-1)
   return last.san
 }
 
@@ -58,8 +60,8 @@ export function StatusBar({
   function getGameOverLabel(reason: GameOverReason): string {
     const winner = turn === 'w' ? blackName : whiteName
     const reasonMap: Record<GameOverReason, string> = {
-      'checkmate': t('gameOver.checkmate', { winner }),
-      'stalemate': t('gameOver.stalemate'),
+      checkmate: t('gameOver.checkmate', { winner }),
+      stalemate: t('gameOver.stalemate'),
       'threefold-repetition': t('gameOver.threefoldRepetition'),
       '50-move-rule': t('gameOver.fiftyMoveRule'),
       'insufficient-material': t('gameOver.insufficientMaterial'),
@@ -80,12 +82,14 @@ export function StatusBar({
               <span
                 className={`status-bar-dot ${
                   turn === 'w' ? 'status-bar-dot-white' : 'status-bar-dot-black'
-                }${isAiThinking ? ' status-bar-dot-pulse' : ''}`}
+                }${isAiThinking ? 'status-bar-dot-pulse' : ''}`}
               />
               {t('turn', { name: turn === 'w' ? whiteName : blackName })}
             </span>
             {isInCheck && (
-              <span className="status-bar-item status-bar-check">{t('check')}</span>
+              <span className="status-bar-item status-bar-check">
+                {t('check')}
+              </span>
             )}
           </>
         )}
@@ -93,30 +97,28 @@ export function StatusBar({
 
       <div className="status-bar-section">
         {whitePercent !== null && !isGameOver && (
-          <span className="status-bar-item tabular-nums text-muted-foreground">
+          <span className="status-bar-item text-muted-foreground tabular-nums">
             {t('winProbability', { name: winProbName })}
             <Progress
-              value={whitePercent}
-              className="inline-block w-8 h-1.5 align-middle bg-muted-foreground/40"
+              className="inline-block h-1.5 w-8 bg-muted-foreground/40 align-middle"
               indicatorClassName="bg-foreground"
+              value={whitePercent}
             />
             {whitePercent}%
           </span>
         )}
         {lastMove && (
-          <span className="status-bar-item status-bar-muted">
-            {lastMove}
-          </span>
+          <span className="status-bar-item status-bar-muted">{lastMove}</span>
         )}
         <span className="status-bar-item status-bar-muted">
           {t('move', { moveNumber })}
         </span>
         <GameDrawer
           canUndo={canUndo}
-          isAiThinking={isAiThinking}
           history={history}
-          onUndo={onUndo}
+          isAiThinking={isAiThinking}
           onNewGame={onNewGame}
+          onUndo={onUndo}
         />
       </div>
     </div>
