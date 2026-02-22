@@ -7,6 +7,7 @@ import "./globals.css";
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("Metadata");
   return {
+    metadataBase: new URL("https://chess.cho.sh"),
     title: t("title"),
     description: t("description"),
   };
