@@ -128,3 +128,47 @@
  Tests mock react-chessboard entirely; access options via `mockChessboard.mock.calls[0][0].options`
  Helper functions (getOptions, dropPiece, checkCanDrag) reduce test boilerplate significantly
  16 new tests: 3 rendering + 2 onPieceDrop + 5 canDragPiece + 6 promotion, total 112 passing
+
+
+
+## [2026-02-22] Task 11: GameControls Component
+ Module-level `const presets = getAllPresets()` avoids recalculating on every render
+ `<select>` renders as combobox role — use getByRole('combobox') in tests
+ undoDisabled = !canUndo || isAiThinking — single derived boolean for disabled state
+ Amber/warm palette maintained: border-amber-300/60, bg-amber-50/80, text-amber-900
+ disabled:pointer-events-none + disabled:opacity-40 for accessible disabled state
+ aria-label on Undo/Flip Board buttons for test queryability (New Game uses text content)
+ 8 new tests, total 120 passing (112 existing + 8 new)
+
+## Task 12: Main Game Page Learnings
+
+- **Stale closure problem**: After `makeMove` mutates the chess.js ref synchronously, `fen` from the hook is stale in the callback closure. Solution: use a `useRef` flag (`pendingAiMove`) + `useEffect` that watches `fen`/`turn` changes to trigger AI move with the correct post-move FEN.
+- **useEffect pattern for async after state change**: Set a ref flag in the event handler, then in useEffect check the flag + derive conditions from fresh state. This avoids stale closures entirely.
+- **Cleanup pattern**: `let cancelled = false` + cleanup `() => { cancelled = true }` prevents applying AI move after component unmount or effect re-run.
+- **`setAiThinking(false)` in finally**: Critical to always reset in finally block to prevent stuck loading state, even on network errors.
+- **Tailwind `@theme inline`**: Biome's CSS parser doesn't understand this syntax, reports parse errors — ignore these, they're false positives.
+- **Build output**: Page renders as `○` (static) since it's a client component with no server-side data fetching.
+
+
+## [2026-02-22] Task 13: Railway Deployment Configuration
+ railway.toml v2 config: builder=DOCKERFILE, startCommand="node server.js", healthcheckPath="/", healthcheckTimeout=300
+ restartPolicyType=ON_FAILURE with maxRetries=3 for resilience
+ Dockerfile validated: 3-stage build (ubuntu:22.04 → oven/bun:1 → node:20-slim) is correct
+ Stockfish built from source with arch auto-detection (armv8-dotprod for ARM, x86-64-modern for x86_64)
+ .dockerignore correctly excludes node_modules, .next, .git, .env*, .sisyphus, coverage, *.md
+ Railway healthcheck hits GET / — Next.js static page responds immediately, 300s timeout is generous
+ No source code changes needed — purely additive deployment config
+
+
+## [2026-02-22] Task 14: Playwright E2E Tests
+ @playwright/test v1.58.2 installed with chromium browser
+ react-chessboard v5 uses @dnd-kit (pointer events), NOT HTML5 drag-and-drop — Playwright's `dragTo()` does NOT work
+ Must use `page.mouse.move/down/move/up` with calculated bounding box centers for drag-and-drop
+ Steps parameter in mousemove ({steps: 5}) is important — @dnd-kit needs intermediate positions to register drag
+ react-chessboard DOM: squares have `data-square`, `data-column`, `data-row` attrs; pieces have `data-piece` (e.g. 'wP', 'bN')
+ Pieces ARE children of square elements: `[data-square="e2"] [data-piece="wP"]` works as nested selector
+ `getByText('Moves')` matched 2 elements (heading + 'No moves yet') — use `getByRole('heading', { name: 'Moves' })` instead
+ Board orientation test: compare a1.y vs h8.y positions — white orientation has a1 below h8 (higher y)
+ Stockfish not available locally — AI test handles gracefully with try/catch and console.warn
+ webServer config in playwright.config.ts auto-starts dev server; reuseExistingServer for local dev
+ 5 E2E tests: page load, new game, difficulty, flip board, AI response
