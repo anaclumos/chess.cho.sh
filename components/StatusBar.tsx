@@ -17,6 +17,8 @@ interface StatusBarProps {
   onUndo: () => void
   onNewGame: () => void
   evaluation: Evaluation | null
+  whiteName: string
+  blackName: string
 }
 
 function getMoveNumber(history: Move[]): number {
@@ -40,6 +42,8 @@ export function StatusBar({
   onUndo,
   onNewGame,
   evaluation,
+  whiteName,
+  blackName,
 }: StatusBarProps) {
   const t = useTranslations('StatusBar')
   const moveNumber = getMoveNumber(history)
@@ -48,7 +52,7 @@ export function StatusBar({
   const whitePercent = evaluation ? evalToWhitePercent(evaluation) : null
 
   function getGameOverLabel(reason: GameOverReason): string {
-    const winner = turn === 'w' ? t('black') : t('white')
+    const winner = turn === 'w' ? blackName : whiteName
     const reasonMap: Record<GameOverReason, string> = {
       'checkmate': t('gameOver.checkmate', { winner }),
       'stalemate': t('gameOver.stalemate'),
@@ -74,7 +78,7 @@ export function StatusBar({
                   turn === 'w' ? 'status-bar-dot-white' : 'status-bar-dot-black'
                 }`}
               />
-              {turn === 'w' ? t('whiteTurn') : t('blackTurn')}
+              {t('turn', { name: turn === 'w' ? whiteName : blackName })}
             </span>
             {isInCheck && (
               <span className="status-bar-item status-bar-check">{t('check')}</span>

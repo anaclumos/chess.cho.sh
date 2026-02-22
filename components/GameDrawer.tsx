@@ -27,7 +27,9 @@ interface GameDrawerProps {
 function switchLocale(current: Locale) {
   const next = locales.find((l) => l !== current) ?? locales[0]
   document.cookie = `NEXT_LOCALE=${next}; path=/; max-age=${60 * 60 * 24 * 365}`
-  window.location.reload()
+  const url = new URL(window.location.href)
+  url.searchParams.set('lang', next)
+  window.location.href = url.toString()
 }
 
 function DrawerAction({

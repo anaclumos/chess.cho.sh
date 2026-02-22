@@ -4,10 +4,7 @@
     "description": "3D Chess Game"
   },
   "StatusBar": {
-    "white": "White",
-    "black": "Black",
-    "whiteTurn": "White's turn",
-    "blackTurn": "Black's turn",
+    "turn": "{name}'s turn",
     "winProbability": "Your Win Probability",
     "check": "Check",
     "thinking": "Thinking…",
@@ -49,5 +46,14 @@
   },
   "MoveHistory": {
     "noMoves": "No moves yet"
+  },
+  "WelcomeDialog": {
+    "title": "What's your name?",
+    "description": "You'll play as White against Sunghyun.",
+    "namePlaceholder": "Enter your name",
+    "play": "Play"
+  },
+  "Players": {
+    "black": "Sunghyun"
   }
 }
