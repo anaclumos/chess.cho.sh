@@ -4,7 +4,7 @@
     "description": "체스 게임",
     "titleDefault": "당신의 차례",
     "titleWithPlayer": "{name} vs {opponent}: 체스!",
-    "descriptionWithPlayer": "{opponent}와 {name}의 체스 게임"
+    "descriptionWithPlayer": "{name}, {opponent}의 체스 게임"
   },
   "StatusBar": {
     "turn": "{name}의 차례",
