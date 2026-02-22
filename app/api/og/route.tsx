@@ -51,8 +51,8 @@ export async function GET(request: NextRequest) {
           style={{
             display: "flex",
             alignItems: "center",
-            gap: "24px",
-            padding: "32px 64px",
+            gap: "36px",
+            padding: "48px 96px",
             backgroundColor: "rgba(255,255,255,0.06)",
             border: "1px solid rgba(255,255,255,0.08)",
             borderRadius: "9999px",
@@ -61,16 +61,16 @@ export async function GET(request: NextRequest) {
           <div
             style={{
               display: "flex",
-              width: "16px",
-              height: "16px",
-              borderRadius: "8px",
+              width: "24px",
+              height: "24px",
+              borderRadius: "12px",
               backgroundColor: PRIMARY,
             }}
           />
           <div
             style={{
               display: "flex",
-              fontSize: "36px",
+              fontSize: "54px",
               fontWeight: 700,
               color: FG,
             }}
@@ -81,14 +81,14 @@ export async function GET(request: NextRequest) {
             style={{
               display: "flex",
               width: "1px",
-              height: "32px",
+              height: "48px",
               backgroundColor: "rgba(255,255,255,0.12)",
             }}
           />
           <div
             style={{
               display: "flex",
-              fontSize: "36px",
+              fontSize: "54px",
               fontWeight: 400,
               color: MUTED,
             }}
