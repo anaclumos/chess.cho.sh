@@ -196,3 +196,7 @@ body {
   opacity: 0.3;
   cursor: default;
 }
+
+* {
+  corner-shape: squircle;
+}
