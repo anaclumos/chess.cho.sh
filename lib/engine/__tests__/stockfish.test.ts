@@ -149,7 +149,7 @@ describe('Stockfish Engine Wrapper', () => {
       emitResponse(stdout, 'readyok', 20)
       await initEngine()
 
-      const preset = getPreset('easy')
+      const preset = getPreset()
       emitResponse(stdout, 'readyok', 30)
       emitResponse(stdout, 'bestmove d2d4', 50)
 
@@ -159,10 +159,10 @@ describe('Stockfish Engine Wrapper', () => {
 
       const writeCalls = stdin.write.mock.calls.map((c: any) => c[0])
       expect(writeCalls).toContain(
-        'setoption name Skill Level value 5\n'
+        'setoption name Skill Level value 20\n'
       )
       expect(writeCalls).toContain(`position fen ${fen}\n`)
-      expect(writeCalls).toContain('go movetime 1000\n')
+      expect(writeCalls).toContain('go movetime 5000\n')
     })
 
     test('handles partial stdout chunks (line buffering)', async () => {

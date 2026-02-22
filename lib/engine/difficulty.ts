@@ -10,7 +10,7 @@ const MAXIMUM_PRESET: DifficultyPreset = {
   description: 'Full Stockfish strength',
 }
 
-export function getPreset(_name?: string): DifficultyPreset {
+export function getPreset(): DifficultyPreset {
   return MAXIMUM_PRESET
 }
 
