@@ -149,16 +149,27 @@ body {
   box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.1);
 }
 
+.status-bar-dot-pulse {
+  background: var(--primary);
+  animation: dot-blink 1.2s ease-in-out infinite;
+  box-shadow: none;
+}
 
+@keyframes dot-blink {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0; transform: scale(0.5); }
+}
 .status-bar-check {
   color: var(--warning);
 }
-
 .status-bar-game-over {
   color: var(--foreground);
   font-weight: 500;
 }
 
+.status-bar-thinking {
+  color: var(--primary);
+}
 
 .status-bar-action {
   display: inline-flex;

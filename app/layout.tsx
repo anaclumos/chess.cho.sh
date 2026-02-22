@@ -10,6 +10,11 @@ export async function generateMetadata(): Promise<Metadata> {
     metadataBase: new URL("https://chess.cho.sh"),
     title: t("title"),
     description: t("description"),
+    appleWebApp: {
+      capable: true,
+      statusBarStyle: "black-translucent",
+      title: t("title"),
+    },
   };
 }
 

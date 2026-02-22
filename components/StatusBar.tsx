@@ -79,8 +79,8 @@ export function StatusBar({
             <span className="status-bar-item">
               <span
                 className={`status-bar-dot ${
-                  turn === 'w' ? 'status-bar-dot-white animate-pulse' : 'status-bar-dot-black'
-                }`}
+                  turn === 'w' ? 'status-bar-dot-white' : 'status-bar-dot-black'
+                }${isAiThinking ? ' status-bar-dot-pulse' : ''}`}
               />
               {t('turn', { name: turn === 'w' ? whiteName : blackName })}
             </span>
