@@ -37,8 +37,8 @@ describe('POST /api/move', () => {
       from: 'e2',
       to: 'e4',
       isGameOver: false,
+      evaluation: { type: 'cp', value: 30 },
     })
-
     const res = await POST(makeRequest({ fen: VALID_FEN }))
     const json = await res.json()
 
@@ -48,6 +48,7 @@ describe('POST /api/move', () => {
       from: 'e2',
       to: 'e4',
       isGameOver: false,
+      evaluation: { type: 'cp', value: 30 },
     })
     expect(mockGetBestMove).toHaveBeenCalledOnce()
   })

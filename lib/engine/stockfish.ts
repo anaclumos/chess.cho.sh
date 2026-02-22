@@ -1,7 +1,7 @@
 import { spawn, type ChildProcess } from 'child_process'
 import { EventEmitter } from 'events'
 import { Chess } from 'chess.js'
-import type { DifficultyPreset, MoveResponse } from '@/lib/types'
+import type { DifficultyPreset, Evaluation, MoveResponse } from '@/lib/types'
 
 const STOCKFISH_PATH =
   process.env.STOCKFISH_PATH ?? '/usr/local/bin/stockfish'
@@ -62,31 +62,37 @@ function waitForLine(target: string): Promise<void> {
 
 function waitForBestMove(): Promise<MoveResponse> {
   return new Promise((resolve, reject) => {
+    let lastEval: Evaluation | undefined
     const timer = setTimeout(() => {
       lineEmitter.removeListener('line', handler)
       reject(new Error('Stockfish timeout: no bestmove within 10s'))
     }, TIMEOUT_MS)
-
     function handler(line: string) {
-      if (!line.startsWith('bestmove')) return
-
-      clearTimeout(timer)
-      lineEmitter.removeListener('line', handler)
-
-      const parts = line.split(' ')
-      const move = parts[1]
-
-      if (!move || move === '(none)') {
-        resolve({ bestMove: null, from: '', to: '', isGameOver: true })
-        return
+      // Capture evaluation from info lines during search
+      if (line.startsWith('info') && line.includes(' score ')) {
+        const mateMatch = line.match(/\bscore mate (-?\d+)/)
+        const cpMatch = line.match(/\bscore cp (-?\d+)/)
+        if (mateMatch) {
+          lastEval = { type: 'mate', value: parseInt(mateMatch[1], 10) }
+        } else if (cpMatch) {
+          lastEval = { type: 'cp', value: parseInt(cpMatch[1], 10) }
+        }
       }
 
+      if (!line.startsWith('bestmove')) return
+      clearTimeout(timer)
+      lineEmitter.removeListener('line', handler)
+      const parts = line.split(' ')
+      const move = parts[1]
+      if (!move || move === '(none)') {
+        resolve({ bestMove: null, from: '', to: '', isGameOver: true, evaluation: lastEval })
+        return
+      }
       const from = move.slice(0, 2)
       const to = move.slice(2, 4)
       const promotion = move.length === 5 ? move[4] : undefined
-      resolve({ bestMove: move, from, to, promotion, isGameOver: false })
+      resolve({ bestMove: move, from, to, promotion, isGameOver: false, evaluation: lastEval })
     }
-
     lineEmitter.on('line', handler)
   })
 }

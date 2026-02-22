@@ -1,7 +1,9 @@
 'use client'
 
 import { GameDrawer } from '@/components/GameDrawer'
-import type { GameOverReason, Move } from '@/lib/types'
+import { Progress } from '@/components/ui/progress'
+import type { Evaluation, GameOverReason, Move } from '@/lib/types'
+import { evalToWhitePercent } from '@/lib/winProbability'
 
 interface StatusBarProps {
   turn: 'w' | 'b'
@@ -13,6 +15,7 @@ interface StatusBarProps {
   canUndo: boolean
   onUndo: () => void
   onNewGame: () => void
+  evaluation: Evaluation | null
 }
 
 function getGameOverLabel(reason: GameOverReason, turn: 'w' | 'b'): string {
@@ -53,10 +56,12 @@ export function StatusBar({
   canUndo,
   onUndo,
   onNewGame,
+  evaluation,
 }: StatusBarProps) {
   const moveNumber = getMoveNumber(history)
   const lastMove = getLastMove(history)
 
+  const whitePercent = evaluation ? evalToWhitePercent(evaluation) : null
   return (
     <div className="status-bar">
       <div className="status-bar-section">
@@ -88,6 +93,16 @@ export function StatusBar({
       </div>
 
       <div className="status-bar-section">
+        {whitePercent !== null && !isGameOver && (
+          <span className="status-bar-item tabular-nums text-muted-foreground">
+            <Progress
+              value={whitePercent}
+              className="inline-block w-8 h-1.5 align-middle bg-muted-foreground/40"
+              indicatorClassName="bg-foreground"
+            />
+            {whitePercent}%
+          </span>
+        )}
         {lastMove && (
           <span className="status-bar-item status-bar-muted">
             {lastMove}

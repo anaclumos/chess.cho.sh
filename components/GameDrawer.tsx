@@ -8,6 +8,9 @@ import {
   DrawerTitle,
   DrawerTrigger,
 } from '@/components/ui/drawer'
+import { Button } from '@/components/ui/button'
+import { Kbd } from '@/components/ui/kbd'
+import { cn } from '@/lib/utils'
 import type { Move } from '@/lib/types'
 
 interface GameDrawerProps {
@@ -33,21 +36,19 @@ function DrawerAction({
 }) {
   return (
     <DrawerClose asChild>
-      <button
-        type="button"
+      <Button
+        variant="ghost"
         disabled={disabled}
         onClick={onClick}
-        className={`flex w-full items-center justify-between rounded-lg px-3 py-2.5 text-left text-sm transition-colors duration-120
-          ${destructive ? 'text-destructive hover:bg-destructive/10' : 'text-foreground hover:bg-accent'}
-          disabled:pointer-events-none disabled:opacity-30`}
+        className={cn(
+          'h-auto w-full justify-between px-3 py-2.5',
+          destructive &&
+            'text-destructive hover:bg-destructive/10 hover:text-destructive'
+        )}
       >
         {label}
-        {kbd && (
-          <span className="rounded border border-border bg-muted px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground">
-            {kbd}
-          </span>
-        )}
-      </button>
+        {kbd && <Kbd>{kbd}</Kbd>}
+      </Button>
     </DrawerClose>
   )
 }

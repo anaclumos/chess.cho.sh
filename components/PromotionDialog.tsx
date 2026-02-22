@@ -1,5 +1,14 @@
 'use client'
 
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
+import { Button } from '@/components/ui/button'
+
 interface PromotionDialogProps {
   isOpen: boolean
   color: 'w' | 'b'
@@ -14,35 +23,36 @@ const PIECES = [
 ] as const
 
 export function PromotionDialog({ isOpen, color, onSelect }: PromotionDialogProps) {
-  if (!isOpen) return null
-
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm"
-      aria-modal="true"
-      role="dialog"
-      aria-label="Choose promotion piece"
-    >
-      <div className="flex flex-col gap-2 rounded-lg border border-white/[0.06] bg-[#1b1b1f] p-4 shadow-2xl shadow-black/50">
-        <p className="mb-1 text-center text-[11px] font-medium uppercase tracking-widest text-[#7d7d85]">
-          Promote to
-        </p>
+    <Dialog open={isOpen}>
+      <DialogContent
+        showCloseButton={false}
+        onInteractOutside={(e) => e.preventDefault()}
+        onEscapeKeyDown={(e) => e.preventDefault()}
+        className="w-auto max-w-fit gap-2 p-4"
+      >
+        <DialogHeader>
+          <DialogTitle className="text-center text-[11px] font-medium uppercase tracking-widest text-muted-foreground">
+            Promote to
+          </DialogTitle>
+          <DialogDescription className="sr-only">
+            Choose a piece to promote your pawn to
+          </DialogDescription>
+        </DialogHeader>
         <div className="flex gap-2">
           {PIECES.map(({ key, label, white, black }) => (
-            <button
-              type="button"
+            <Button
               key={key}
+              variant="outline"
               onClick={() => onSelect(key)}
               aria-label={label}
-              className="flex h-14 w-14 items-center justify-center rounded-md border border-white/[0.06] bg-white/[0.03] text-3xl transition-all duration-120 hover:border-white/[0.12] hover:bg-white/[0.06] active:scale-95"
+              className="h-14 w-14 text-3xl"
             >
-              <span>
-                {color === 'w' ? white : black}
-              </span>
-            </button>
+              {color === 'w' ? white : black}
+            </Button>
           ))}
         </div>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   )
 }

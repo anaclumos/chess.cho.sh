@@ -5,6 +5,7 @@ import dynamic from 'next/dynamic'
 import { StatusBar } from '@/components/StatusBar'
 import { PromotionDialog } from '@/components/PromotionDialog'
 import { useChessGame } from '@/hooks/useChessGame'
+import type { Evaluation } from '@/lib/types'
 
 const Board3D = dynamic(
   () => import('@/components/Board3D').then((m) => m.Board3D),
@@ -37,6 +38,7 @@ export default function Home() {
     from: string
     to: string
   } | null>(null)
+  const [evaluation, setEvaluation] = useState<Evaluation | null>(null)
 
   const handleSquareClick = useCallback(
     (square: string) => {
@@ -98,6 +100,9 @@ export default function Home() {
         const data = await res.json()
         if (!cancelled) {
           applyAiMove(data.from, data.to, data.promotion)
+          if (data.evaluation) {
+            setEvaluation(data.evaluation)
+          }
         }
       } finally {
         if (!cancelled) setAiThinking(false)
@@ -136,6 +141,7 @@ export default function Home() {
         canUndo={canUndo}
         onUndo={undoMove}
         onNewGame={newGame}
+        evaluation={evaluation}
       />
       <PromotionDialog
         isOpen={pendingPromotion !== null}

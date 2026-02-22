@@ -81,6 +81,70 @@ describe('Stockfish Engine Wrapper', () => {
       expect(result.to).toBe('e4')
       expect(result.isGameOver).toBe(false)
       expect(result.promotion).toBeUndefined()
+      expect(result.evaluation).toEqual({ type: 'cp', value: 30 })
+    })
+
+    test('captures mate evaluation from info lines', async () => {
+      const { proc, stdout } = createMockStockfish()
+      spawnMock.mockReturnValue(proc as any)
+
+      emitResponse(stdout, 'uciok', 10)
+      emitResponse(stdout, 'readyok', 20)
+      await initEngine()
+
+      const preset = getPreset('intermediate')
+
+      emitResponse(stdout, 'info depth 15 score mate 3')
+      emitResponse(stdout, 'bestmove e2e4', 50)
+
+      const result = await getBestMove(
+        'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1',
+        preset
+      )
+
+      expect(result.evaluation).toEqual({ type: 'mate', value: 3 })
+    })
+
+    test('uses last info line evaluation when multiple are emitted', async () => {
+      const { proc, stdout } = createMockStockfish()
+      spawnMock.mockReturnValue(proc as any)
+
+      emitResponse(stdout, 'uciok', 10)
+      emitResponse(stdout, 'readyok', 20)
+      await initEngine()
+
+      const preset = getPreset()
+
+      emitResponse(stdout, 'info depth 5 score cp 10')
+      emitResponse(stdout, 'info depth 10 score cp 25', 20)
+      emitResponse(stdout, 'info depth 20 score cp 42', 30)
+      emitResponse(stdout, 'bestmove d2d4', 50)
+
+      const result = await getBestMove(
+        'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1',
+        preset
+      )
+
+      expect(result.evaluation).toEqual({ type: 'cp', value: 42 })
+    })
+
+    test('returns undefined evaluation when no info lines emitted', async () => {
+      const { proc, stdout } = createMockStockfish()
+      spawnMock.mockReturnValue(proc as any)
+
+      emitResponse(stdout, 'uciok', 10)
+      emitResponse(stdout, 'readyok', 20)
+      await initEngine()
+
+      const preset = getPreset('beginner')
+      emitResponse(stdout, 'bestmove a7a8q', 50)
+
+      const result = await getBestMove(
+        '8/P7/8/8/8/8/8/k1K5 w - - 0 1',
+        preset
+      )
+
+      expect(result.evaluation).toBeUndefined()
     })
 
     test('parses promotion moves correctly', async () => {

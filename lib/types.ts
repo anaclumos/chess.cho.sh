@@ -26,6 +26,12 @@ export interface Move {
   promotion?: string
 }
 
+
+export interface Evaluation {
+  type: 'cp' | 'mate'
+  value: number // centipawns or moves to mate (positive = side to move advantage)
+}
+
 export interface DifficultyPreset {
   name: string
   label: string
@@ -45,6 +51,7 @@ export interface MoveResponse {
   to: string
   promotion?: string
   isGameOver: boolean
+  evaluation?: Evaluation
 }
 
 export type UCICommand = string
