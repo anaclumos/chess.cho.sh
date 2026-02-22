@@ -6,6 +6,9 @@
   "StatusBar": {
     "white": "백",
     "black": "흑",
+    "whiteTurn": "백 차례",
+    "blackTurn": "흑 차례",
+    "winProbability": "내 승률",
     "check": "체크",
     "thinking": "생각 중…",
     "move": "{moveNumber}수째",

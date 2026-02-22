@@ -74,7 +74,7 @@ export function StatusBar({
                   turn === 'w' ? 'status-bar-dot-white' : 'status-bar-dot-black'
                 }`}
               />
-              {turn === 'w' ? t('white') : t('black')}
+              {turn === 'w' ? t('whiteTurn') : t('blackTurn')}
             </span>
             {isInCheck && (
               <span className="status-bar-item status-bar-check">{t('check')}</span>
@@ -91,7 +91,7 @@ export function StatusBar({
 
       <div className="status-bar-section">
         {whitePercent !== null && !isGameOver && (
-          <span className="status-bar-item tabular-nums text-muted-foreground">
+          <span className="status-bar-item tabular-nums text-muted-foreground" title={t('winProbability')}>
             <Progress
               value={whitePercent}
               className="inline-block w-8 h-1.5 align-middle bg-muted-foreground/40"
