@@ -113,16 +113,17 @@ export default function Home() {
 
   return (
     <div className="relative h-[100dvh] w-screen overflow-hidden">
-
-      <Board3D
-        fen={fen}
-        turn={turn}
-        isAiThinking={isAiThinking}
-        isGameOver={isGameOver}
-        selectedSquare={selectedSquare}
-        legalMoves={legalMoves}
-        onSquareClick={handleSquareClick}
-      />
+      <div className="absolute inset-0">
+        <Board3D
+          fen={fen}
+          turn={turn}
+          isAiThinking={isAiThinking}
+          isGameOver={isGameOver}
+          selectedSquare={selectedSquare}
+          legalMoves={legalMoves}
+          onSquareClick={handleSquareClick}
+        />
+      </div>
 
 
       <div className="pointer-events-none absolute inset-x-0 top-0 z-10 flex items-start justify-between gap-2 p-3 pt-[max(0.75rem,env(safe-area-inset-top))]">
@@ -131,7 +132,7 @@ export default function Home() {
           onClick={undoMove}
           disabled={!canUndo}
           aria-label="Undo"
-          className="pointer-events-auto rounded-xl bg-white/80 px-4 py-2 text-sm font-semibold text-amber-900 shadow-lg backdrop-blur-sm transition-all active:scale-95 disabled:pointer-events-none disabled:opacity-40"
+          className="pointer-events-auto rounded-xl bg-white/90 px-4 py-2 text-sm font-semibold text-black shadow-lg backdrop-blur-sm transition-all active:scale-95 disabled:pointer-events-none disabled:opacity-40"
         >
           ↩ Undo
         </button>
