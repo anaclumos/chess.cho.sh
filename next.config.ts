@@ -7,6 +7,7 @@ const nextConfig: NextConfig = {
   experimental: {
     optimizePackageImports: [
       'nucleo-ui-outline-18',
+      'nucleo-ui-fill-duo-18',
       'radix-ui',
       'three',
       '@react-three/drei',

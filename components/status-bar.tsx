@@ -1,6 +1,7 @@
 'use client'
 import { memo } from 'react'
 
+import { IconChessFillDuo18 } from 'nucleo-ui-fill-duo-18'
 import { josa } from 'es-hangul'
 import { useLocale, useTranslations } from 'next-intl'
 import { GameDrawer } from '@/components/game-drawer'
@@ -24,16 +25,16 @@ interface StatusBarProps {
 }
 
 const ITEM =
-  'inline-flex items-center gap-2 rounded-[6px] px-2.5 py-1 whitespace-nowrap transition-colors hover:bg-white/6'
+  'inline-flex items-center gap-2 rounded-lg px-2.5 py-1 whitespace-nowrap transition-colors hover:bg-white/6'
 
-function dotClassName(turn: 'w' | 'b', isAiThinking: boolean): string {
+function turnIconClassName(turn: 'w' | 'b', isAiThinking: boolean): string {
   if (isAiThinking) {
-    return 'bg-primary animate-pulse'
+    return 'text-primary animate-pulse'
   }
   if (turn === 'w') {
-    return 'bg-foreground shadow-[0_0_0_1px_rgba(255,255,255,0.15)]'
+    return 'text-foreground'
   }
-  return 'bg-muted-foreground shadow-[0_0_0_1px_rgba(255,255,255,0.1)]'
+  return 'text-muted-foreground'
 }
 
 export const StatusBar = memo(function StatusBar({
@@ -70,7 +71,7 @@ export const StatusBar = memo(function StatusBar({
   }
 
   return (
-    <div className="absolute bottom-[max(16px,env(safe-area-inset-bottom,16px))] left-1/2 z-20 flex h-10 -translate-x-1/2 select-none items-center justify-between gap-1.5 rounded-full border border-border bg-white/6 px-4 font-sans text-muted-foreground text-sm shadow-[0_2px_8px_rgba(0,0,0,0.3)] backdrop-blur-[16px]">
+    <div className="absolute bottom-[max(16px,env(safe-area-inset-bottom,16px))] left-1/2 z-20 flex h-10 -translate-x-1/2 select-none items-center justify-between gap-1.5 rounded-full border border-border bg-white/6 px-1.5 font-sans text-muted-foreground text-sm shadow-[0_2px_8px_rgba(0,0,0,0.3)] backdrop-blur-[16px]">
       <div className="flex items-center gap-0.5">
         {isGameOver && gameOverReason ? (
           <span className={`${ITEM} font-medium text-foreground`}>
@@ -79,8 +80,8 @@ export const StatusBar = memo(function StatusBar({
         ) : (
           <>
             <span className={ITEM}>
-              <span
-                className={`size-2 shrink-0 rounded-full ${dotClassName(turn, isAiThinking)}`}
+              <IconChessFillDuo18
+                className={`shrink-0 size-3.5 ${turnIconClassName(turn, isAiThinking)}`}
               />
               {t('turn', { name: turn === 'w' ? whiteName : blackName })}
             </span>
