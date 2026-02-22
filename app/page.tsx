@@ -31,6 +31,7 @@ export async function generateMetadata({
         { url: `/api/og?${params.toString()}`, width: 1200, height: 630 },
       ],
     },
+  }
 }
 
 export default function Home() {
