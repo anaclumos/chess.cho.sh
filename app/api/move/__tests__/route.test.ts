@@ -31,7 +31,7 @@ describe('POST /api/move', () => {
     vi.clearAllMocks()
   })
 
-  test('returns 200 with bestMove for valid FEN + difficulty', async () => {
+  test('returns 200 with bestMove for valid FEN', async () => {
     mockGetBestMove.mockResolvedValue({
       bestMove: 'e2e4',
       from: 'e2',
@@ -39,7 +39,7 @@ describe('POST /api/move', () => {
       isGameOver: false,
     })
 
-    const res = await POST(makeRequest({ fen: VALID_FEN, difficulty: 'beginner' }))
+    const res = await POST(makeRequest({ fen: VALID_FEN }))
     const json = await res.json()
 
     expect(res.status).toBe(200)
@@ -52,6 +52,26 @@ describe('POST /api/move', () => {
     expect(mockGetBestMove).toHaveBeenCalledOnce()
   })
 
+  test('always uses maximum difficulty preset', async () => {
+    mockGetBestMove.mockResolvedValue({
+      bestMove: 'd2d4',
+      from: 'd2',
+      to: 'd4',
+      isGameOver: false,
+    })
+
+    await POST(makeRequest({ fen: VALID_FEN }))
+
+    expect(mockGetBestMove).toHaveBeenCalledWith(
+      VALID_FEN,
+      expect.objectContaining({
+        name: 'maximum',
+        skillLevel: 20,
+        movetime: 5000,
+      })
+    )
+  })
+
   test('returns promotion field when present', async () => {
     mockGetBestMove.mockResolvedValue({
       bestMove: 'a7a8q',
@@ -61,7 +81,7 @@ describe('POST /api/move', () => {
       isGameOver: false,
     })
 
-    const res = await POST(makeRequest({ fen: VALID_FEN, difficulty: 'easy' }))
+    const res = await POST(makeRequest({ fen: VALID_FEN }))
     const json = await res.json()
 
     expect(res.status).toBe(200)
@@ -76,7 +96,7 @@ describe('POST /api/move', () => {
       isGameOver: true,
     })
 
-    const res = await POST(makeRequest({ fen: VALID_FEN, difficulty: 'hard' }))
+    const res = await POST(makeRequest({ fen: VALID_FEN }))
     const json = await res.json()
 
     expect(res.status).toBe(200)
@@ -89,7 +109,7 @@ describe('POST /api/move', () => {
   })
 
   test('returns 400 for invalid FEN string', async () => {
-    const res = await POST(makeRequest({ fen: 'not-valid-fen', difficulty: 'beginner' }))
+    const res = await POST(makeRequest({ fen: 'not-valid-fen' }))
     const json = await res.json()
 
     expect(res.status).toBe(400)
@@ -97,66 +117,21 @@ describe('POST /api/move', () => {
     expect(mockGetBestMove).not.toHaveBeenCalled()
   })
 
-  test('returns 400 for unknown difficulty name', async () => {
-    const res = await POST(makeRequest({ fen: VALID_FEN, difficulty: 'grandmaster' }))
-    const json = await res.json()
-
-    expect(res.status).toBe(400)
-    expect(json.error).toMatch(/unknown difficulty/i)
-    expect(mockGetBestMove).not.toHaveBeenCalled()
-  })
-
   test('returns 400 when fen is missing', async () => {
-    const res = await POST(makeRequest({ difficulty: 'beginner' }))
+    const res = await POST(makeRequest({}))
     const json = await res.json()
 
     expect(res.status).toBe(400)
     expect(json.error).toMatch(/fen.*required|missing/i)
   })
 
-  test('returns 400 when difficulty is missing', async () => {
-    const res = await POST(makeRequest({ fen: VALID_FEN }))
-    const json = await res.json()
-
-    expect(res.status).toBe(400)
-    expect(json.error).toMatch(/difficulty.*required|missing/i)
-  })
-
-  test('returns 400 when body is empty', async () => {
-    const res = await POST(makeRequest({}))
-    const json = await res.json()
-
-    expect(res.status).toBe(400)
-    expect(json.error).toBeDefined()
-  })
-
   test('returns 500 when engine throws unexpected error', async () => {
     mockGetBestMove.mockRejectedValue(new Error('Stockfish crashed'))
 
-    const res = await POST(makeRequest({ fen: VALID_FEN, difficulty: 'beginner' }))
+    const res = await POST(makeRequest({ fen: VALID_FEN }))
     const json = await res.json()
 
     expect(res.status).toBe(500)
     expect(json.error).toMatch(/engine/i)
-  })
-
-  test('passes correct preset to getBestMove', async () => {
-    mockGetBestMove.mockResolvedValue({
-      bestMove: 'd2d4',
-      from: 'd2',
-      to: 'd4',
-      isGameOver: false,
-    })
-
-    await POST(makeRequest({ fen: VALID_FEN, difficulty: 'intermediate' }))
-
-    expect(mockGetBestMove).toHaveBeenCalledWith(
-      VALID_FEN,
-      expect.objectContaining({
-        name: 'intermediate',
-        skillLevel: 10,
-        movetime: 2000,
-      })
-    )
   })
 })

@@ -2,12 +2,16 @@ import { describe, test, expect, vi, beforeEach } from 'vitest'
 import { render, screen, fireEvent, act } from '@testing-library/react'
 import '@testing-library/jest-dom'
 
-// Mock react-chessboard — it uses canvas/WebGL which jsdom cannot handle
-const mockChessboard = vi.fn()
-vi.mock('react-chessboard', () => ({
-  Chessboard: (props: Record<string, unknown>) => {
-    mockChessboard(props)
-    return <div data-testid="chessboard" />
+vi.mock('@react-three/fiber', () => ({
+  Canvas: ({ children }: { children: React.ReactNode }) => (
+    <div data-testid="canvas">{children}</div>
+  ),
+}))
+
+vi.mock('../3d/ChessScene', () => ({
+  ChessScene: (props: Record<string, unknown>) => {
+    mockChessScene(props)
+    return <div data-testid="chess-scene" />
   },
 }))
 
@@ -26,231 +30,80 @@ vi.mock('../PromotionDialog', () => ({
         <button type="button" onClick={() => onSelect('q')}>
           Queen
         </button>
-        <button type="button" onClick={() => onSelect('r')}>
-          Rook
-        </button>
-        <button type="button" onClick={() => onSelect('b')}>
-          Bishop
-        </button>
-        <button type="button" onClick={() => onSelect('n')}>
-          Knight
-        </button>
       </div>
     ) : null,
 }))
 
-import { Board } from '../Board'
+const mockChessScene = vi.fn()
+
+import { Board3D } from '../Board3D'
 
 const defaultProps = {
   fen: 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1',
   turn: 'w' as const,
-  boardOrientation: 'white' as const,
   isAiThinking: false,
   isGameOver: false,
-  makeMove: vi.fn(() => true),
-  isPromotion: vi.fn(() => false),
+  selectedSquare: null as string | null,
+  legalMoves: [] as string[],
+  onSquareClick: vi.fn(),
 }
 
-function getOptions() {
-  return mockChessboard.mock.calls[0][0].options
-}
-
-function dropPiece(from: string, to: string, pieceType = 'wP') {
-  return getOptions().onPieceDrop({
-    piece: { isSparePiece: false, position: from, pieceType },
-    sourceSquare: from,
-    targetSquare: to,
-  })
-}
-
-function checkCanDrag(pieceType: string, square = 'e2') {
-  return getOptions().canDragPiece({
-    isSparePiece: false,
-    piece: { pieceType },
-    square,
-  })
-}
-
-describe('Board', () => {
+describe('Board3D', () => {
   beforeEach(() => {
     vi.clearAllMocks()
   })
 
   describe('rendering', () => {
-    test('renders Chessboard with correct FEN position', () => {
-      render(<Board {...defaultProps} />)
-      expect(getOptions().position).toBe(defaultProps.fen)
+    test('renders canvas container', () => {
+      render(<Board3D {...defaultProps} />)
+      expect(screen.getByTestId('canvas')).toBeInTheDocument()
     })
 
-    test('passes boardOrientation to Chessboard', () => {
-      render(<Board {...defaultProps} boardOrientation="black" />)
-      expect(getOptions().boardOrientation).toBe('black')
+    test('renders chess scene', () => {
+      render(<Board3D {...defaultProps} />)
+      expect(screen.getByTestId('chess-scene')).toBeInTheDocument()
     })
 
-    test('renders chessboard element', () => {
-      render(<Board {...defaultProps} />)
-      expect(screen.getByTestId('chessboard')).toBeInTheDocument()
-    })
-  })
-
-  describe('onPieceDrop', () => {
-    test('triggers makeMove when no promotion', () => {
-      const makeMove = vi.fn(() => true)
-      const isPromotion = vi.fn(() => false)
-      render(
-        <Board
-          {...defaultProps}
-          makeMove={makeMove}
-          isPromotion={isPromotion}
-        />
-      )
-
-      const result = dropPiece('e2', 'e4')
-
-      expect(isPromotion).toHaveBeenCalledWith('e2', 'e4')
-      expect(makeMove).toHaveBeenCalledWith('e2', 'e4')
-      expect(result).toBe(true)
-    })
-
-    test('returns false when makeMove fails (illegal move)', () => {
-      const makeMove = vi.fn(() => false)
-      const isPromotion = vi.fn(() => false)
-      render(
-        <Board
-          {...defaultProps}
-          makeMove={makeMove}
-          isPromotion={isPromotion}
-        />
-      )
-
-      const result = dropPiece('e2', 'e5')
-      expect(result).toBe(false)
-    })
-  })
-
-  describe('canDragPiece', () => {
-    test('prevents moving opponent pieces (black piece on white turn)', () => {
-      render(<Board {...defaultProps} turn="w" />)
-      // 'bP' pieceType: 'b' prefix = black; turn is 'w' → NOT draggable
-      expect(checkCanDrag('bP', 'd7')).toBe(false)
-    })
-
-    test('allows moving own pieces (white piece on white turn)', () => {
-      render(<Board {...defaultProps} turn="w" />)
-      expect(checkCanDrag('wP', 'e2')).toBe(true)
-    })
-
-    test('allows moving own pieces (black piece on black turn)', () => {
-      render(<Board {...defaultProps} turn="b" />)
-      expect(checkCanDrag('bN', 'b8')).toBe(true)
-    })
-
-    test('disables dragging when isAiThinking is true', () => {
-      render(<Board {...defaultProps} isAiThinking={true} turn="w" />)
-      expect(checkCanDrag('wP', 'e2')).toBe(false)
-    })
-
-    test('disables dragging when isGameOver is true', () => {
-      render(<Board {...defaultProps} isGameOver={true} turn="w" />)
-      expect(checkCanDrag('wP', 'e2')).toBe(false)
-    })
-  })
-
-  describe('promotion', () => {
-    test('shows PromotionDialog when isPromotion returns true', () => {
-      const isPromotion = vi.fn(() => true)
-      render(<Board {...defaultProps} isPromotion={isPromotion} />)
-
-      act(() => {
-        dropPiece('e7', 'e8')
-      })
-
-      expect(screen.getByTestId('promotion-dialog')).toBeInTheDocument()
-    })
-
-    test('does not show PromotionDialog for normal moves', () => {
-      render(<Board {...defaultProps} />)
-
-      act(() => {
-        dropPiece('e2', 'e4')
-      })
-
-      expect(screen.queryByTestId('promotion-dialog')).not.toBeInTheDocument()
-    })
-
-    test('calls makeMove with promotion piece when selected', () => {
-      const makeMove = vi.fn(() => true)
-      const isPromotion = vi.fn(() => true)
-      render(
-        <Board
-          {...defaultProps}
-          makeMove={makeMove}
-          isPromotion={isPromotion}
-        />
-      )
-
-      act(() => {
-        dropPiece('e7', 'e8')
-      })
-
-      act(() => {
-        fireEvent.click(screen.getByText('Queen'))
-      })
-
-      expect(makeMove).toHaveBeenCalledWith('e7', 'e8', 'q')
-    })
-
-    test('closes PromotionDialog after piece selection', () => {
-      const isPromotion = vi.fn(() => true)
-      render(<Board {...defaultProps} isPromotion={isPromotion} />)
-
-      act(() => {
-        dropPiece('e7', 'e8')
-      })
-
-      expect(screen.getByTestId('promotion-dialog')).toBeInTheDocument()
-
-      act(() => {
-        fireEvent.click(screen.getByText('Rook'))
-      })
-
-      expect(screen.queryByTestId('promotion-dialog')).not.toBeInTheDocument()
-    })
-
-    test('passes correct color to PromotionDialog', () => {
-      const isPromotion = vi.fn(() => true)
-      render(
-        <Board {...defaultProps} turn="w" isPromotion={isPromotion} />
-      )
-
-      act(() => {
-        dropPiece('e7', 'e8')
-      })
-
-      expect(screen.getByTestId('promotion-dialog')).toHaveAttribute(
-        'data-color',
-        'w'
+    test('passes fen to ChessScene', () => {
+      render(<Board3D {...defaultProps} />)
+      expect(mockChessScene).toHaveBeenCalledWith(
+        expect.objectContaining({ fen: defaultProps.fen })
       )
     })
 
-    test('onPieceDrop returns false during pending promotion (no immediate move)', () => {
-      const makeMove = vi.fn(() => true)
-      const isPromotion = vi.fn(() => true)
-      render(
-        <Board
-          {...defaultProps}
-          makeMove={makeMove}
-          isPromotion={isPromotion}
-        />
+    test('passes turn to ChessScene', () => {
+      render(<Board3D {...defaultProps} turn="b" />)
+      expect(mockChessScene).toHaveBeenCalledWith(
+        expect.objectContaining({ turn: 'b' })
       )
+    })
 
-      let result: boolean
-      act(() => {
-        result = dropPiece('e7', 'e8')
-      })
+    test('passes selectedSquare to ChessScene', () => {
+      render(<Board3D {...defaultProps} selectedSquare="e2" />)
+      expect(mockChessScene).toHaveBeenCalledWith(
+        expect.objectContaining({ selectedSquare: 'e2' })
+      )
+    })
 
-      expect(result!).toBe(false)
-      expect(makeMove).not.toHaveBeenCalled()
+    test('passes legalMoves to ChessScene', () => {
+      render(<Board3D {...defaultProps} legalMoves={['e3', 'e4']} />)
+      expect(mockChessScene).toHaveBeenCalledWith(
+        expect.objectContaining({ legalMoves: ['e3', 'e4'] })
+      )
+    })
+
+    test('passes isAiThinking to ChessScene', () => {
+      render(<Board3D {...defaultProps} isAiThinking={true} />)
+      expect(mockChessScene).toHaveBeenCalledWith(
+        expect.objectContaining({ isAiThinking: true })
+      )
+    })
+
+    test('passes isGameOver to ChessScene', () => {
+      render(<Board3D {...defaultProps} isGameOver={true} />)
+      expect(mockChessScene).toHaveBeenCalledWith(
+        expect.objectContaining({ isGameOver: true })
+      )
     })
   })
 })

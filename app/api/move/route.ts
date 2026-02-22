@@ -4,25 +4,18 @@ import { getBestMove } from '@/lib/engine/stockfish'
 import { getPreset } from '@/lib/engine/difficulty'
 
 export async function POST(request: NextRequest) {
-  let body: { fen?: string; difficulty?: string }
+  let body: { fen?: string }
   try {
     body = await request.json()
   } catch {
     return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
   }
 
-  const { fen, difficulty } = body
+  const { fen } = body
 
   if (!fen || typeof fen !== 'string') {
     return NextResponse.json(
       { error: 'Missing required field: fen' },
-      { status: 400 }
-    )
-  }
-
-  if (!difficulty || typeof difficulty !== 'string') {
-    return NextResponse.json(
-      { error: 'Missing required field: difficulty' },
       { status: 400 }
     )
   }
@@ -36,15 +29,7 @@ export async function POST(request: NextRequest) {
     )
   }
 
-  let preset: ReturnType<typeof getPreset>
-  try {
-    preset = getPreset(difficulty)
-  } catch {
-    return NextResponse.json(
-      { error: `Unknown difficulty: "${difficulty}"` },
-      { status: 400 }
-    )
-  }
+  const preset = getPreset()
 
   try {
     const result = await getBestMove(fen, preset)

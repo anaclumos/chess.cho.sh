@@ -30,11 +30,6 @@ describe('useChessGame - initial state', () => {
     expect(result.current.isAiThinking).toBe(false)
   })
 
-  test('starts with boardOrientation=white', () => {
-    const { result } = renderHook(() => useChessGame())
-    expect(result.current.boardOrientation).toBe('white')
-  })
-
   test('starts with isInCheck=false', () => {
     const { result } = renderHook(() => useChessGame())
     expect(result.current.isInCheck).toBe(false)
@@ -43,6 +38,16 @@ describe('useChessGame - initial state', () => {
   test('starts with gameOverReason=null', () => {
     const { result } = renderHook(() => useChessGame())
     expect(result.current.gameOverReason).toBeNull()
+  })
+
+  test('starts with no selected square', () => {
+    const { result } = renderHook(() => useChessGame())
+    expect(result.current.selectedSquare).toBeNull()
+  })
+
+  test('starts with empty legal moves', () => {
+    const { result } = renderHook(() => useChessGame())
+    expect(result.current.legalMoves).toEqual([])
   })
 })
 
@@ -75,7 +80,7 @@ describe('useChessGame - makeMove', () => {
     const fenBefore = result.current.fen
 
     act(() => {
-      const success = result.current.makeMove('e2', 'e5') // illegal
+      const success = result.current.makeMove('e2', 'e5')
       expect(success).toBe(false)
     })
 
@@ -83,10 +88,26 @@ describe('useChessGame - makeMove', () => {
     expect(result.current.history).toHaveLength(0)
   })
 
+  test('clears selection after successful move', () => {
+    const { result } = renderHook(() => useChessGame())
+
+    act(() => {
+      result.current.selectSquare('e2')
+    })
+
+    expect(result.current.selectedSquare).toBe('e2')
+
+    act(() => {
+      result.current.makeMove('e2', 'e4')
+    })
+
+    expect(result.current.selectedSquare).toBeNull()
+    expect(result.current.legalMoves).toEqual([])
+  })
+
   test('accepts promotion param for pawn promotion moves', () => {
     const { result } = renderHook(() => useChessGame())
 
-    // Load a position with pawn about to promote
     act(() => {
       result.current.loadFen('8/P7/8/8/8/8/8/k1K5 w - - 0 1')
     })
@@ -101,16 +122,97 @@ describe('useChessGame - makeMove', () => {
   })
 })
 
+describe('useChessGame - selectSquare', () => {
+  test('selects own piece and populates legal moves', () => {
+    const { result } = renderHook(() => useChessGame())
+
+    act(() => {
+      result.current.selectSquare('e2')
+    })
+
+    expect(result.current.selectedSquare).toBe('e2')
+    expect(result.current.legalMoves).toContain('e3')
+    expect(result.current.legalMoves).toContain('e4')
+    expect(result.current.legalMoves.length).toBe(2)
+  })
+
+  test('clears selection when selecting opponent piece', () => {
+    const { result } = renderHook(() => useChessGame())
+
+    act(() => {
+      result.current.selectSquare('e2')
+    })
+
+    act(() => {
+      result.current.selectSquare('e7')
+    })
+
+    expect(result.current.selectedSquare).toBeNull()
+    expect(result.current.legalMoves).toEqual([])
+  })
+
+  test('clears selection when selecting empty square', () => {
+    const { result } = renderHook(() => useChessGame())
+
+    act(() => {
+      result.current.selectSquare('e2')
+    })
+
+    act(() => {
+      result.current.selectSquare('e5')
+    })
+
+    expect(result.current.selectedSquare).toBeNull()
+    expect(result.current.legalMoves).toEqual([])
+  })
+
+  test('switches selection to another own piece', () => {
+    const { result } = renderHook(() => useChessGame())
+
+    act(() => {
+      result.current.selectSquare('e2')
+    })
+
+    expect(result.current.selectedSquare).toBe('e2')
+
+    act(() => {
+      result.current.selectSquare('d2')
+    })
+
+    expect(result.current.selectedSquare).toBe('d2')
+    expect(result.current.legalMoves).toContain('d3')
+    expect(result.current.legalMoves).toContain('d4')
+  })
+})
+
+describe('useChessGame - clearSelection', () => {
+  test('clears selected square and legal moves', () => {
+    const { result } = renderHook(() => useChessGame())
+
+    act(() => {
+      result.current.selectSquare('e2')
+    })
+
+    expect(result.current.selectedSquare).toBe('e2')
+
+    act(() => {
+      result.current.clearSelection()
+    })
+
+    expect(result.current.selectedSquare).toBeNull()
+    expect(result.current.legalMoves).toEqual([])
+  })
+})
+
 describe('useChessGame - undoMove', () => {
   test('undoes 2 half-moves (restores to position before user move)', () => {
     const { result } = renderHook(() => useChessGame())
 
-    // Make user move + simulate AI move
     act(() => {
-      result.current.makeMove('e2', 'e4') // user move
+      result.current.makeMove('e2', 'e4')
     })
     act(() => {
-      result.current.applyAiMove('e7', 'e5') // AI move
+      result.current.applyAiMove('e7', 'e5')
     })
 
     expect(result.current.history).toHaveLength(2)
@@ -140,13 +242,34 @@ describe('useChessGame - undoMove', () => {
     const { result } = renderHook(() => useChessGame())
 
     act(() => {
-      result.current.makeMove('e2', 'e4') // only user's move, no AI yet
+      result.current.makeMove('e2', 'e4')
     })
 
     act(() => {
       const success = result.current.undoMove()
       expect(success).toBe(false)
     })
+  })
+
+  test('clears selection on undo', () => {
+    const { result } = renderHook(() => useChessGame())
+
+    act(() => {
+      result.current.makeMove('e2', 'e4')
+    })
+    act(() => {
+      result.current.applyAiMove('e7', 'e5')
+    })
+    act(() => {
+      result.current.selectSquare('d2')
+    })
+
+    act(() => {
+      result.current.undoMove()
+    })
+
+    expect(result.current.selectedSquare).toBeNull()
+    expect(result.current.legalMoves).toEqual([])
   })
 })
 
@@ -168,29 +291,20 @@ describe('useChessGame - newGame', () => {
     expect(result.current.gameOverReason).toBeNull()
     expect(result.current.turn).toBe('w')
   })
-})
 
-describe('useChessGame - flipBoard', () => {
-  test('toggles boardOrientation from white to black', () => {
-    const { result } = renderHook(() => useChessGame())
-    expect(result.current.boardOrientation).toBe('white')
-
-    act(() => {
-      result.current.flipBoard()
-    })
-
-    expect(result.current.boardOrientation).toBe('black')
-  })
-
-  test('toggles boardOrientation from black back to white', () => {
+  test('clears selection on new game', () => {
     const { result } = renderHook(() => useChessGame())
 
     act(() => {
-      result.current.flipBoard()
-      result.current.flipBoard()
+      result.current.selectSquare('e2')
     })
 
-    expect(result.current.boardOrientation).toBe('white')
+    act(() => {
+      result.current.newGame()
+    })
+
+    expect(result.current.selectedSquare).toBeNull()
+    expect(result.current.legalMoves).toEqual([])
   })
 })
 
@@ -246,15 +360,15 @@ describe('useChessGame - applyAiMove', () => {
     const { result } = renderHook(() => useChessGame())
 
     act(() => {
-      result.current.makeMove('e2', 'e4') // white's move
+      result.current.makeMove('e2', 'e4')
     })
 
     act(() => {
-      result.current.applyAiMove('e7', 'e5') // AI (black) responds
+      result.current.applyAiMove('e7', 'e5')
     })
 
     expect(result.current.history).toHaveLength(2)
-    expect(result.current.turn).toBe('w') // back to white
+    expect(result.current.turn).toBe('w')
   })
 })
 
@@ -262,7 +376,6 @@ describe('useChessGame - game-over detection', () => {
   test("detects checkmate (Fool's Mate)", () => {
     const { result } = renderHook(() => useChessGame())
 
-    // Fool's Mate: 1. f3 e5 2. g4 Qh4#
     act(() => { result.current.makeMove('f2', 'f3') })
     act(() => { result.current.applyAiMove('e7', 'e5') })
     act(() => { result.current.makeMove('g2', 'g4') })
@@ -275,7 +388,6 @@ describe('useChessGame - game-over detection', () => {
   test('detects stalemate', () => {
     const { result } = renderHook(() => useChessGame())
 
-    // Black to move, stalemated
     act(() => {
       result.current.loadFen('k7/8/1Q6/8/8/8/8/K7 b - - 0 1')
     })
@@ -287,7 +399,6 @@ describe('useChessGame - game-over detection', () => {
   test('detects check state (isInCheck)', () => {
     const { result } = renderHook(() => useChessGame())
 
-    // White king in check from black rook on h1
     act(() => {
       result.current.loadFen('4k3/8/8/8/8/8/8/4K2r w - - 0 1')
     })

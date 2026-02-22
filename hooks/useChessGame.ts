@@ -28,12 +28,14 @@ export interface UseChessGameReturn {
   gameOverReason: GameOverReason | null
   turn: 'w' | 'b'
   isAiThinking: boolean
-  boardOrientation: 'white' | 'black'
   isInCheck: boolean
+  selectedSquare: string | null
+  legalMoves: string[]
   makeMove: (from: string, to: string, promotion?: string) => boolean
   undoMove: () => boolean
   newGame: () => void
-  flipBoard: () => void
+  selectSquare: (square: string) => void
+  clearSelection: () => void
   setAiThinking: (thinking: boolean) => void
   isPromotion: (from: string, to: string) => boolean
   applyAiMove: (from: string, to: string, promotion?: string) => boolean
@@ -43,8 +45,34 @@ export interface UseChessGameReturn {
 export function useChessGame(): UseChessGameReturn {
   const gameRef = useRef(new Chess())
   const [, forceRender] = useReducer((x: number) => x + 1, 0)
-  const [boardOrientation, setBoardOrientation] = useState<'white' | 'black'>('white')
   const [isAiThinking, setIsAiThinkingState] = useState(false)
+  const [selectedSquare, setSelectedSquare] = useState<string | null>(null)
+  const [legalMoves, setLegalMoves] = useState<string[]>([])
+
+  const clearSelection = useCallback(() => {
+    setSelectedSquare(null)
+    setLegalMoves([])
+  }, [])
+
+  const selectSquare = useCallback(
+    (square: string) => {
+      const chess = gameRef.current
+      const piece = chess.get(square as Square)
+      if (!piece || piece.color !== chess.turn()) {
+        clearSelection()
+        return
+      }
+
+      try {
+        const moves = chess.moves({ square: square as Square, verbose: true })
+        setSelectedSquare(square)
+        setLegalMoves(moves.map((m) => m.to))
+      } catch {
+        clearSelection()
+      }
+    },
+    [clearSelection]
+  )
 
   const makeMove = useCallback(
     (from: string, to: string, promotion?: string): boolean => {
@@ -54,6 +82,8 @@ export function useChessGame(): UseChessGameReturn {
           to: to as Square,
           promotion: promotion as 'q' | 'r' | 'b' | 'n' | undefined,
         })
+        setSelectedSquare(null)
+        setLegalMoves([])
         forceRender()
         return true
       } catch {
@@ -75,17 +105,17 @@ export function useChessGame(): UseChessGameReturn {
 
     gameRef.current.undo()
     gameRef.current.undo()
+    setSelectedSquare(null)
+    setLegalMoves([])
     forceRender()
     return true
   }, [])
 
   const newGame = useCallback(() => {
     gameRef.current = new Chess()
+    setSelectedSquare(null)
+    setLegalMoves([])
     forceRender()
-  }, [])
-
-  const flipBoard = useCallback(() => {
-    setBoardOrientation((prev) => (prev === 'white' ? 'black' : 'white'))
   }, [])
 
   const setAiThinking = useCallback((thinking: boolean) => {
@@ -104,6 +134,8 @@ export function useChessGame(): UseChessGameReturn {
   const loadFen = useCallback((fen: string) => {
     try {
       gameRef.current = new Chess(fen)
+      setSelectedSquare(null)
+      setLegalMoves([])
       forceRender()
     } catch {}
   }, [])
@@ -131,13 +163,15 @@ export function useChessGame(): UseChessGameReturn {
     // eslint-disable-next-line react-hooks/refs -- intentional: ref is kept in sync via forceRender()
     turn: chess.turn(),
     isAiThinking,
-    boardOrientation,
     // eslint-disable-next-line react-hooks/refs -- intentional: ref is kept in sync via forceRender()
     isInCheck: chess.inCheck(),
+    selectedSquare,
+    legalMoves,
     makeMove,
     undoMove,
     newGame,
-    flipBoard,
+    selectSquare,
+    clearSelection,
     setAiThinking,
     isPromotion: isPromotionCheck,
     applyAiMove,
