@@ -1,4 +1,5 @@
 'use client'
+import { memo } from 'react'
 
 import { josa } from 'es-hangul'
 import { useLocale, useTranslations } from 'next-intl'
@@ -35,7 +36,7 @@ function dotClassName(turn: 'w' | 'b', isAiThinking: boolean): string {
   return 'bg-muted-foreground shadow-[0_0_0_1px_rgba(255,255,255,0.1)]'
 }
 
-export function StatusBar({
+export const StatusBar = memo(function StatusBar({
   turn,
   isInCheck,
   isGameOver,
@@ -112,4 +113,4 @@ export function StatusBar({
       </div>
     </div>
   )
-}
+})

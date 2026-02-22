@@ -1,7 +1,10 @@
 {
   "Metadata": {
     "title": "체스",
-    "description": "3D 체스 게임"
+    "description": "3D 체스 게임",
+    "titleDefault": "당신의 차례: 체스!",
+    "titleWithPlayer": "{name} vs {opponent}: 체스!",
+    "descriptionWithPlayer": "{opponent}와 {name}의 체스 게임"
   },
   "StatusBar": {
     "turn": "{name}의 차례",

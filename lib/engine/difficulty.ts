@@ -1,4 +1,4 @@
-export type { DifficultyPreset } from '@/lib/types'
+import type { DifficultyPreset } from '@/lib/types'
 
 const MAXIMUM_PRESET: DifficultyPreset = {
   name: 'maximum',

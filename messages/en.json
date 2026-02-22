@@ -1,7 +1,10 @@
 {
   "Metadata": {
     "title": "Chess",
-    "description": "3D Chess Game"
+    "description": "3D Chess Game",
+    "titleDefault": "Your Move: Chess!",
+    "titleWithPlayer": "{name} vs {opponent}: Chess!",
+    "descriptionWithPlayer": "{name}'s 3D Chess Game against {opponent}"
   },
   "StatusBar": {
     "turn": "{name}'s turn",

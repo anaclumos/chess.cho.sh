@@ -2,7 +2,7 @@
 
 import type { ThreeEvent } from '@react-three/fiber'
 import { useFrame } from '@react-three/fiber'
-import { useMemo, useRef } from 'react'
+import { memo, useMemo, useRef } from 'react'
 import type { Mesh } from 'three'
 import { createPieceGeometry } from './piece-profiles'
 
@@ -16,7 +16,7 @@ interface ChessPieceProps {
 
 const LERP_SPEED = 10
 
-export function ChessPiece({
+export const ChessPiece = memo(function ChessPiece({
   type,
   color,
   position,
@@ -85,4 +85,4 @@ export function ChessPiece({
       <meshStandardMaterial {...materialProps} />
     </mesh>
   )
-}
+})

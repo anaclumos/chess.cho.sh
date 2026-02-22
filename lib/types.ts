@@ -1,13 +1,3 @@
-export interface GameState {
-  boardOrientation: 'white' | 'black'
-  currentFen: string
-  gameOverReason: GameOverReason | null
-  history: Move[]
-  isAiThinking: boolean
-  isGameOver: boolean
-  isInCheck: boolean
-  turn: 'w' | 'b'
-}
 
 export type GameOverReason =
   | 'checkmate'

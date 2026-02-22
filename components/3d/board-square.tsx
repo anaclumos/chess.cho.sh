@@ -2,7 +2,7 @@
 
 import type { ThreeEvent } from '@react-three/fiber'
 import { useFrame } from '@react-three/fiber'
-import { useRef } from 'react'
+import { memo, useRef } from 'react'
 import type { Mesh } from 'three'
 
 function squareColor(isSelected: boolean, isLight: boolean): string {
@@ -77,7 +77,7 @@ function CaptureRing({ visible }: { visible: boolean }) {
   )
 }
 
-export function BoardSquare({
+export const BoardSquare = memo(function BoardSquare({
   row,
   col,
   isLegalMove,
@@ -111,4 +111,4 @@ export function BoardSquare({
       <CaptureRing visible={isLegalMove && hasPiece} />
     </group>
   )
-}
+})
