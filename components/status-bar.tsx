@@ -22,6 +22,9 @@ interface StatusBarProps {
   whiteName: string
 }
 
+const ITEM =
+  'inline-flex items-center gap-1.5 rounded-[4px] px-2 py-0.5 whitespace-nowrap transition-colors hover:bg-white/6'
+
 function getMoveNumber(history: Move[]): number {
   return Math.floor(history.length / 2) + 1
 }
@@ -31,7 +34,17 @@ function getLastMove(history: Move[]): string | null {
     return null
   }
   const last = history.at(-1)
-  return last.san
+  return last?.san ?? null
+}
+
+function dotClassName(turn: 'w' | 'b', isAiThinking: boolean): string {
+  if (isAiThinking) {
+    return 'bg-primary animate-pulse'
+  }
+  if (turn === 'w') {
+    return 'bg-foreground shadow-[0_0_0_1px_rgba(255,255,255,0.15)]'
+  }
+  return 'bg-muted-foreground shadow-[0_0_0_1px_rgba(255,255,255,0.1)]'
 }
 
 export function StatusBar({
@@ -70,34 +83,30 @@ export function StatusBar({
   }
 
   return (
-    <div className="status-bar">
-      <div className="status-bar-section">
+    <div className="absolute bottom-[max(12px,env(safe-area-inset-bottom,12px))] left-1/2 z-20 flex h-8 -translate-x-1/2 select-none items-center justify-between gap-1 rounded-full border border-border bg-white/6 px-3.5 font-sans text-muted-foreground text-xs shadow-[0_2px_8px_rgba(0,0,0,0.3)] backdrop-blur-[16px]">
+      <div className="flex items-center gap-0.5">
         {isGameOver && gameOverReason ? (
-          <span className="status-bar-item status-bar-game-over">
+          <span className={`${ITEM} font-medium text-foreground`}>
             {getGameOverLabel(gameOverReason)}
           </span>
         ) : (
           <>
-            <span className="status-bar-item">
+            <span className={ITEM}>
               <span
-                className={`status-bar-dot ${
-                  turn === 'w' ? 'status-bar-dot-white' : 'status-bar-dot-black'
-                }${isAiThinking ? 'status-bar-dot-pulse' : ''}`}
+                className={`size-[7px] shrink-0 rounded-full ${dotClassName(turn, isAiThinking)}`}
               />
               {t('turn', { name: turn === 'w' ? whiteName : blackName })}
             </span>
             {isInCheck && (
-              <span className="status-bar-item status-bar-check">
-                {t('check')}
-              </span>
+              <span className={`${ITEM} text-warning`}>{t('check')}</span>
             )}
           </>
         )}
       </div>
 
-      <div className="status-bar-section">
+      <div className="flex items-center gap-0.5">
         {whitePercent !== null && !isGameOver && (
-          <span className="status-bar-item text-muted-foreground tabular-nums">
+          <span className={`${ITEM} text-muted-foreground tabular-nums`}>
             {t('winProbability', { name: winProbName })}
             <Progress
               className="inline-block h-1.5 w-8 bg-muted-foreground/40 align-middle"
@@ -108,9 +117,9 @@ export function StatusBar({
           </span>
         )}
         {lastMove && (
-          <span className="status-bar-item status-bar-muted">{lastMove}</span>
+          <span className={`${ITEM} text-muted-foreground`}>{lastMove}</span>
         )}
-        <span className="status-bar-item status-bar-muted">
+        <span className={`${ITEM} text-muted-foreground`}>
           {t('move', { moveNumber })}
         </span>
         <GameDrawer

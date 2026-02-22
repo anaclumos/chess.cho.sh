@@ -82,7 +82,7 @@ export function GameDrawer({
       <DrawerTrigger asChild>
         <button
           aria-label="Options"
-          className="status-bar-action"
+          className="inline-flex cursor-pointer items-center gap-[5px] whitespace-nowrap rounded-[4px] px-2 py-0.5 text-muted-foreground transition-[background,color] duration-[120ms] hover:bg-white/6 hover:text-foreground disabled:cursor-default disabled:opacity-30"
           type="button"
         >
           ⋯
