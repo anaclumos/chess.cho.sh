@@ -5,7 +5,7 @@
   },
   "StatusBar": {
     "turn": "{name}'s turn",
-    "winProbability": "Your Win Probability",
+    "winProbability": "{name}'s Win Probability",
     "check": "Check",
     "thinking": "Thinking…",
     "move": "Move {moveNumber}",
