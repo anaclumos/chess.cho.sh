@@ -3,4 +3,5 @@
   "deploy": {
     "aptPackages": ["stockfish"],
     "startCommand": "bun run start"
+  }
 }
