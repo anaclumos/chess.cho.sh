@@ -3,7 +3,6 @@ import {
   getPreset,
   getAllPresets,
   getUCIOptions,
-  type DifficultyPreset,
 } from '../difficulty'
 
 describe('getAllPresets', () => {

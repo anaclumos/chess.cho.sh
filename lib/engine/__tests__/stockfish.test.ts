@@ -1,6 +1,7 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { describe, test, expect, vi, beforeEach } from 'vitest'
 import { EventEmitter } from 'events'
-import { spawn } from 'child_process'
+// child_process is mocked via vi.mock below
 import {
   initEngine,
   getBestMove,

@@ -108,9 +108,10 @@ export function useChessGame(): UseChessGameReturn {
     } catch {}
   }, [])
 
+  // eslint-disable-next-line react-hooks/refs -- intentional: ref is kept in sync via forceRender()
   const chess = gameRef.current
   const { isGameOver, gameOverReason } = detectGameOver(chess)
-
+  // eslint-disable-next-line react-hooks/refs -- intentional: ref is kept in sync via forceRender()
   const rawHistory = chess.history({ verbose: true })
   const history: Move[] = rawHistory.map((m) => ({
     from: m.from,
@@ -121,15 +122,17 @@ export function useChessGame(): UseChessGameReturn {
     captured: m.captured,
     promotion: m.promotion,
   }))
-
   return {
+    // eslint-disable-next-line react-hooks/refs -- intentional: ref is kept in sync via forceRender()
     fen: chess.fen(),
     history,
     isGameOver,
     gameOverReason,
+    // eslint-disable-next-line react-hooks/refs -- intentional: ref is kept in sync via forceRender()
     turn: chess.turn(),
     isAiThinking,
     boardOrientation,
+    // eslint-disable-next-line react-hooks/refs -- intentional: ref is kept in sync via forceRender()
     isInCheck: chess.inCheck(),
     makeMove,
     undoMove,
