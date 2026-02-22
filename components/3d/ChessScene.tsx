@@ -1,7 +1,8 @@
 'use client'
 
-import { useMemo } from 'react'
+import { useMemo, useRef, useEffect, type ComponentRef } from 'react'
 import { PerspectiveCamera, OrbitControls } from '@react-three/drei'
+import { TOUCH } from 'three'
 import { BoardSquare } from './BoardSquare'
 import { ChessPiece } from './ChessPiece'
 
@@ -82,10 +83,25 @@ export function ChessScene({
     return squareToCoords(selectedSquare)
   }, [selectedSquare])
 
+  const controlsRef = useRef<ComponentRef<typeof OrbitControls>>(null)
+
+  useEffect(() => {
+    const controls = controlsRef.current
+    if (controls) {
+      // Single-finger touch maps to PAN (disabled) → no-op, letting taps reach pieces.
+      // Two-finger touch enables camera rotation.
+      controls.touches = {
+        ONE: TOUCH.PAN,
+        TWO: TOUCH.DOLLY_ROTATE,
+      }
+    }
+  }, [])
   return (
     <>
+      <color attach="background" args={['#1c1410']} />
       <PerspectiveCamera makeDefault position={[0, 7, 5]} fov={45} />
       <OrbitControls
+        ref={controlsRef}
         enablePan={false}
         enableZoom={false}
         minPolarAngle={Math.PI / 6}

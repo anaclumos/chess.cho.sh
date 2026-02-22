@@ -39,10 +39,10 @@ export function GameStatus({
 
     return (
       <output
-        className={`block rounded-lg px-4 py-3 text-center font-semibold ${
+        className={`block rounded-xl px-3 py-2 text-center text-sm font-semibold shadow-lg backdrop-blur-sm ${
           isCheckmate
-            ? 'bg-red-100 text-red-800'
-            : 'bg-amber-100 text-amber-800'
+            ? 'bg-red-100/90 text-red-800'
+            : 'bg-amber-100/90 text-amber-800'
         }`}
       >
         {getGameOverMessage(gameOverReason, turn)}
@@ -53,7 +53,7 @@ export function GameStatus({
   if (isInCheck) {
     return (
       <output
-        className="block rounded-lg bg-orange-100 px-4 py-2 text-center font-semibold text-orange-700"
+        className="block rounded-xl bg-orange-100/90 px-3 py-2 text-center text-sm font-semibold text-orange-700 shadow-lg backdrop-blur-sm"
       >
         Check!
       </output>

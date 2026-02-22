@@ -23,7 +23,7 @@ export function Board3D({
   onSquareClick,
 }: Board3DProps) {
   return (
-    <div className="aspect-square w-full">
+    <div className="h-full w-full">
       <Canvas
         dpr={[1, 2]}
         shadows

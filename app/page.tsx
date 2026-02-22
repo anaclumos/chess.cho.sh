@@ -2,8 +2,6 @@
 
 import { useState, useCallback, useEffect, useRef } from 'react'
 import dynamic from 'next/dynamic'
-import { GameControls } from '@/components/GameControls'
-import { MoveHistory } from '@/components/MoveHistory'
 import { GameStatus } from '@/components/GameStatus'
 import { PromotionDialog } from '@/components/PromotionDialog'
 import { useChessGame } from '@/hooks/useChessGame'
@@ -26,7 +24,6 @@ export default function Home() {
     legalMoves,
     makeMove,
     undoMove,
-    newGame,
     selectSquare,
     clearSelection,
     setAiThinking,
@@ -112,57 +109,52 @@ export default function Home() {
     }
   }, [fen, turn, isGameOver, setAiThinking, applyAiMove])
 
-  const handleNewGame = useCallback(() => {
-    setPendingPromotion(null)
-    newGame()
-    fetch('/api/newgame', { method: 'POST' }).catch(() => {})
-  }, [newGame])
-
   const canUndo = history.length >= 2 && !isAiThinking && !isGameOver
 
   return (
-    <div className="flex min-h-[100dvh] flex-col items-center bg-amber-50/40 px-3 py-4">
-      <div className="w-full max-w-[min(100vw-24px,500px)]">
-        <Board3D
-          fen={fen}
-          turn={turn}
-          isAiThinking={isAiThinking}
-          isGameOver={isGameOver}
-          selectedSquare={selectedSquare}
-          legalMoves={legalMoves}
-          onSquareClick={handleSquareClick}
-        />
-      </div>
+    <div className="relative h-[100dvh] w-screen overflow-hidden">
 
-      <div className="mt-3 flex w-full max-w-[min(100vw-24px,500px)] flex-col gap-2.5">
-        <GameStatus
-          isGameOver={isGameOver}
-          gameOverReason={gameOverReason}
-          turn={turn}
-          isInCheck={isInCheck}
-        />
+      <Board3D
+        fen={fen}
+        turn={turn}
+        isAiThinking={isAiThinking}
+        isGameOver={isGameOver}
+        selectedSquare={selectedSquare}
+        legalMoves={legalMoves}
+        onSquareClick={handleSquareClick}
+      />
 
-        {isAiThinking && (
-          <div className="flex items-center gap-2 rounded-lg bg-amber-100/80 px-3 py-2 text-sm font-medium text-amber-800">
-            <span className="inline-block h-2 w-2 animate-pulse rounded-full bg-amber-600" />
-            AI is thinking&hellip;
-          </div>
-        )}
 
-        <GameControls
-          onNewGame={handleNewGame}
-          onUndo={undoMove}
-          canUndo={canUndo}
-          isAiThinking={isAiThinking}
-        />
+      <div className="pointer-events-none absolute inset-x-0 top-0 z-10 flex items-start justify-between gap-2 p-3 pt-[max(0.75rem,env(safe-area-inset-top))]">
+        <button
+          type="button"
+          onClick={undoMove}
+          disabled={!canUndo}
+          aria-label="Undo"
+          className="pointer-events-auto rounded-xl bg-white/80 px-4 py-2 text-sm font-semibold text-amber-900 shadow-lg backdrop-blur-sm transition-all active:scale-95 disabled:pointer-events-none disabled:opacity-40"
+        >
+          ↩ Undo
+        </button>
 
-        <div className="min-h-0 max-h-[200px] overflow-hidden rounded-xl border border-amber-900/10 bg-white/70 p-3">
-          <h2 className="mb-2 text-xs font-bold uppercase tracking-widest text-amber-700/60">
-            Moves
-          </h2>
-          <MoveHistory history={history} />
+        <div className="pointer-events-auto">
+          <GameStatus
+            isGameOver={isGameOver}
+            gameOverReason={gameOverReason}
+            turn={turn}
+            isInCheck={isInCheck}
+          />
         </div>
       </div>
+
+
+      {isAiThinking && (
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 flex justify-center p-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
+          <div className="flex items-center gap-2 rounded-full bg-black/60 px-4 py-2 text-sm font-medium text-white backdrop-blur-sm">
+            <span className="inline-block h-2 w-2 animate-pulse rounded-full bg-amber-400" />
+            AI is thinking&hellip;
+          </div>
+        </div>
+      )}
 
       <PromotionDialog
         isOpen={pendingPromotion !== null}

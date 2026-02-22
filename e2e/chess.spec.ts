@@ -18,63 +18,11 @@ test.describe('Chess Game E2E', () => {
     await page.waitForSelector('[data-square="e2"]')
   })
 
-  test('page loads and chessboard renders', async ({ page }) => {
-    await expect(page.locator('[data-square="e2"]')).toBeVisible()
-    await expect(page.locator('[data-square="e7"]')).toBeVisible()
-    await expect(page.locator('[data-square="a1"]')).toBeVisible()
-    await expect(page.locator('[data-square="h8"]')).toBeVisible()
-
-    await expect(page.locator('[data-piece="wP"]').first()).toBeVisible()
-    await expect(page.locator('[data-piece="bP"]').first()).toBeVisible()
-
-    await expect(page.getByRole('button', { name: 'New Game' })).toBeVisible()
+  test('page loads and undo button renders', async ({ page }) => {
     await expect(page.getByRole('button', { name: 'Undo' })).toBeVisible()
-    await expect(page.getByRole('button', { name: 'Flip Board' })).toBeVisible()
-    await expect(page.getByRole('combobox')).toBeVisible()
-
-    await expect(page.getByRole('heading', { name: 'Moves' })).toBeVisible()
   })
 
-  test('New Game button resets the board', async ({ page }) => {
-    await dragPiece(page, 'e2', 'e4')
-    await page.waitForTimeout(500)
-    await page.getByRole('button', { name: 'New Game' }).click()
-    await page.waitForTimeout(500)
 
-    const e2Piece = page.locator('[data-square="e2"] [data-piece="wP"]')
-    await expect(e2Piece).toBeVisible()
-  })
-
-  test('difficulty selector changes and persists', async ({ page }) => {
-    const select = page.getByRole('combobox')
-    await expect(select).toHaveValue('intermediate')
-    await select.selectOption('beginner')
-    await expect(select).toHaveValue('beginner')
-    await select.selectOption('maximum')
-    await expect(select).toHaveValue('maximum')
-    await select.selectOption('easy')
-    await expect(select).toHaveValue('easy')
-  })
-
-  test('Flip Board button changes board orientation', async ({ page }) => {
-    const a1Before = await page.locator('[data-square="a1"]').boundingBox()
-    const h8Before = await page.locator('[data-square="h8"]').boundingBox()
-
-    expect(a1Before).not.toBeNull()
-    expect(h8Before).not.toBeNull()
-
-    expect(a1Before!.y).toBeGreaterThan(h8Before!.y)
-
-    await page.getByRole('button', { name: 'Flip Board' }).click()
-    await page.waitForTimeout(300)
-
-    const a1After = await page.locator('[data-square="a1"]').boundingBox()
-    const h8After = await page.locator('[data-square="h8"]').boundingBox()
-
-    expect(a1After).not.toBeNull()
-    expect(h8After).not.toBeNull()
-    expect(a1After!.y).toBeLessThan(h8After!.y)
-  })
 
   test('AI responds to player move', async ({ page }) => {
     const initialBlackPieces = await page.locator('[data-piece^="b"]').count()

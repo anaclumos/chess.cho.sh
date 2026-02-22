@@ -1,8 +1,8 @@
 @import "tailwindcss";
 
 :root {
-  --background: #fefdfb;
-  --foreground: #1c1917;
+  --background: #1c1410;
+  --foreground: #f5f0e8;
 }
 
 @theme inline {
@@ -10,6 +10,13 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+}
+
+html,
+body {
+  height: 100%;
+  overflow: hidden;
+  overscroll-behavior: none;
 }
 
 body {
