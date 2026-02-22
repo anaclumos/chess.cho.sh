@@ -6,7 +6,7 @@ const nextConfig: NextConfig = {
   serverExternalPackages: ['chess.js'],
   experimental: {
     optimizePackageImports: [
-      'lucide-react',
+      'nucleo-ui-outline-18',
       'radix-ui',
       'three',
       '@react-three/drei',

@@ -1,6 +1,6 @@
 'use client'
 
-import { XIcon } from 'lucide-react'
+import { IconXmarkOutline18 } from 'nucleo-ui-outline-18'
 import { Dialog as DialogPrimitive } from 'radix-ui'
 import type * as React from 'react'
 import { Button } from '@/components/ui/button'
@@ -71,7 +71,7 @@ function DialogContent({
             className="absolute top-4 right-4 rounded-xs opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-hidden focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground [&_svg:not([class*='size-'])]:size-4 [&_svg]:pointer-events-none [&_svg]:shrink-0"
             data-slot="dialog-close"
           >
-            <XIcon />
+            <IconXmarkOutline18 />
             <span className="sr-only">Close</span>
           </DialogPrimitive.Close>
         )}
