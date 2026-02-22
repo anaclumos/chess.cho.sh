@@ -28,7 +28,7 @@ export function Board3D({
         dpr={[1, 2]}
         shadows
         style={{ touchAction: 'none' }}
-        gl={{ antialias: true, alpha: false }}
+        gl={{ antialias: true, alpha: false, powerPreference: 'high-performance' }}
         onPointerMissed={() => onSquareClick('')}
       >
         <ChessScene

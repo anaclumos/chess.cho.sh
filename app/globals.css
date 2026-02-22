@@ -149,15 +149,6 @@ body {
   box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.1);
 }
 
-.status-bar-dot-pulse {
-  background: var(--primary);
-  animation: status-pulse 1.5s ease-in-out infinite;
-}
-
-@keyframes status-pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.3; }
-}
 
 .status-bar-check {
   color: var(--warning);
@@ -168,9 +159,6 @@ body {
   font-weight: 500;
 }
 
-.status-bar-thinking {
-  color: var(--primary);
-}
 
 .status-bar-action {
   display: inline-flex;

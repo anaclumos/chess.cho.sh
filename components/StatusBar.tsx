@@ -79,19 +79,13 @@ export function StatusBar({
             <span className="status-bar-item">
               <span
                 className={`status-bar-dot ${
-                  turn === 'w' ? 'status-bar-dot-white' : 'status-bar-dot-black'
+                  turn === 'w' ? 'status-bar-dot-white animate-pulse' : 'status-bar-dot-black'
                 }`}
               />
               {t('turn', { name: turn === 'w' ? whiteName : blackName })}
             </span>
             {isInCheck && (
               <span className="status-bar-item status-bar-check">{t('check')}</span>
-            )}
-            {isAiThinking && (
-              <span className="status-bar-item status-bar-thinking">
-                <span className="status-bar-dot status-bar-dot-pulse" />
-                {t('thinking')}
-              </span>
             )}
           </>
         )}

@@ -157,7 +157,13 @@ export function ChessScene({
       />
 
       <ambientLight intensity={0.5} />
-      <directionalLight position={[5, 8, 5]} intensity={0.8} castShadow />
+      <directionalLight
+        position={[5, 8, 5]}
+        intensity={0.8}
+        castShadow
+        shadow-mapSize={[2048, 2048]}
+        shadow-bias={-0.0001}
+      />
       <directionalLight position={[-3, 6, -3]} intensity={0.3} />
 
       <mesh position={[0, -0.05, 0]} receiveShadow>

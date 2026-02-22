@@ -8,7 +8,7 @@ import {
 
 const cache = new Map<string, BufferGeometry>()
 
-const SEGMENTS = 32
+const SEGMENTS = 64
 
 function pawnProfile(): Vector2[] {
   return [
@@ -212,7 +212,7 @@ function knightGeometry(): BufferGeometry {
     bevelEnabled: true,
     bevelThickness: 0.03,
     bevelSize: 0.03,
-    bevelSegments: 4,
+    bevelSegments: 8,
   })
   geo.translate(0, 0, -0.125)
   geo.computeVertexNormals()

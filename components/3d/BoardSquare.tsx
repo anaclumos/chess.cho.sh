@@ -29,7 +29,7 @@ function MoveDot() {
 
   return (
     <mesh ref={ref} position={[0, 0.1, 0]} scale={0}>
-      <cylinderGeometry args={[0.15, 0.15, 0.02, 16]} />
+      <cylinderGeometry args={[0.15, 0.15, 0.02, 32]} />
       <meshStandardMaterial color="#22c55e" transparent opacity={0.6} />
     </mesh>
   )
@@ -48,7 +48,7 @@ function CaptureRing() {
 
   return (
     <mesh ref={ref} position={[0, 0.1, 0]} rotation={[-Math.PI / 2, 0, 0]} scale={0}>
-      <ringGeometry args={[0.35, 0.45, 32]} />
+      <ringGeometry args={[0.35, 0.45, 48]} />
       <meshStandardMaterial color="#ef4444" transparent opacity={0.5} side={2} />
     </mesh>
   )
