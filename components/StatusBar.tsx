@@ -1,10 +1,11 @@
 'use client'
 
-import { useTranslations } from 'next-intl'
+import { useTranslations, useLocale } from 'next-intl'
 import { GameDrawer } from '@/components/GameDrawer'
 import { Progress } from '@/components/ui/progress'
 import type { Evaluation, GameOverReason, Move } from '@/lib/types'
 import { evalToWhitePercent } from '@/lib/winProbability'
+import { josa } from 'es-hangul'
 
 interface StatusBarProps {
   turn: 'w' | 'b'
@@ -50,6 +51,9 @@ export function StatusBar({
   const lastMove = getLastMove(history)
 
   const whitePercent = evaluation ? evalToWhitePercent(evaluation) : null
+  const locale = useLocale()
+
+  const winProbName = locale === 'ko' ? josa(whiteName, '이/가') : whiteName
 
   function getGameOverLabel(reason: GameOverReason): string {
     const winner = turn === 'w' ? blackName : whiteName
@@ -95,7 +99,8 @@ export function StatusBar({
 
       <div className="status-bar-section">
         {whitePercent !== null && !isGameOver && (
-          <span className="status-bar-item tabular-nums text-muted-foreground" title={t('winProbability')}>
+          <span className="status-bar-item tabular-nums text-muted-foreground">
+            {t('winProbability', { name: winProbName })}
             <Progress
               value={whitePercent}
               className="inline-block w-8 h-1.5 align-middle bg-muted-foreground/40"
