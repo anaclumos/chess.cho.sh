@@ -16,15 +16,16 @@ interface BoardSquareProps {
 
 const SCALE_SPEED = 12
 
-function MoveDot() {
+function MoveDot({ visible }: { visible: boolean }) {
   const ref = useRef<Mesh>(null)
 
   useFrame((_, delta) => {
     if (!ref.current) return
+    const target = visible ? 1 : 0
     const t = Math.min(1, delta * SCALE_SPEED)
-    ref.current.scale.x += (1 - ref.current.scale.x) * t
-    ref.current.scale.y += (1 - ref.current.scale.y) * t
-    ref.current.scale.z += (1 - ref.current.scale.z) * t
+    ref.current.scale.x += (target - ref.current.scale.x) * t
+    ref.current.scale.y += (target - ref.current.scale.y) * t
+    ref.current.scale.z += (target - ref.current.scale.z) * t
   })
 
   return (
@@ -35,15 +36,16 @@ function MoveDot() {
   )
 }
 
-function CaptureRing() {
+function CaptureRing({ visible }: { visible: boolean }) {
   const ref = useRef<Mesh>(null)
 
   useFrame((_, delta) => {
     if (!ref.current) return
+    const target = visible ? 1 : 0
     const t = Math.min(1, delta * SCALE_SPEED)
-    ref.current.scale.x += (1 - ref.current.scale.x) * t
-    ref.current.scale.y += (1 - ref.current.scale.y) * t
-    ref.current.scale.z += (1 - ref.current.scale.z) * t
+    ref.current.scale.x += (target - ref.current.scale.x) * t
+    ref.current.scale.y += (target - ref.current.scale.y) * t
+    ref.current.scale.z += (target - ref.current.scale.z) * t
   })
 
   return (
@@ -84,8 +86,8 @@ export function BoardSquare({
         />
       </mesh>
 
-      {isLegalMove && !hasPiece && <MoveDot />}
-      {isLegalMove && hasPiece && <CaptureRing />}
+      <MoveDot visible={isLegalMove && !hasPiece} />
+      <CaptureRing visible={isLegalMove && hasPiece} />
     </group>
   )
 }
