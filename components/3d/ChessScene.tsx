@@ -94,7 +94,7 @@ export function ChessScene({
   return (
     <>
       <color attach="background" args={['#000000']} />
-      <PerspectiveCamera makeDefault position={[0, 7, -5]} fov={45} />
+      <PerspectiveCamera makeDefault position={[0, 8, -6]} fov={45} />
       <OrbitControls
         ref={controlsRef}
         enableRotate
