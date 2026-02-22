@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useEffect, useRef } from 'react'
 import dynamic from 'next/dynamic'
-import { GameStatus } from '@/components/GameStatus'
+import { StatusBar } from '@/components/StatusBar'
 import { PromotionDialog } from '@/components/PromotionDialog'
 import { useChessGame } from '@/hooks/useChessGame'
 
@@ -29,6 +29,7 @@ export default function Home() {
     setAiThinking,
     isPromotion,
     applyAiMove,
+    newGame,
   } = useChessGame()
 
   const pendingAiMove = useRef(false)
@@ -125,38 +126,17 @@ export default function Home() {
         />
       </div>
 
-
-      <div className="pointer-events-none absolute inset-x-0 top-0 z-10 flex items-start justify-between gap-2 p-3 pt-[max(0.75rem,env(safe-area-inset-top))]">
-        <button
-          type="button"
-          onClick={undoMove}
-          disabled={!canUndo}
-          aria-label="Undo"
-          className="pointer-events-auto rounded-xl bg-white/90 px-4 py-2 text-sm font-semibold text-black shadow-lg backdrop-blur-sm transition-all active:scale-95 disabled:pointer-events-none disabled:opacity-40"
-        >
-          ↩ Undo
-        </button>
-
-        <div className="pointer-events-auto">
-          <GameStatus
-            isGameOver={isGameOver}
-            gameOverReason={gameOverReason}
-            turn={turn}
-            isInCheck={isInCheck}
-          />
-        </div>
-      </div>
-
-
-      {isAiThinking && (
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 flex justify-center p-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
-          <div className="flex items-center gap-2 rounded-full bg-black/60 px-4 py-2 text-sm font-medium text-white backdrop-blur-sm">
-            <span className="inline-block h-2 w-2 animate-pulse rounded-full bg-amber-400" />
-            AI is thinking&hellip;
-          </div>
-        </div>
-      )}
-
+      <StatusBar
+        turn={turn}
+        isInCheck={isInCheck}
+        isGameOver={isGameOver}
+        gameOverReason={gameOverReason}
+        isAiThinking={isAiThinking}
+        history={history}
+        canUndo={canUndo}
+        onUndo={undoMove}
+        onNewGame={newGame}
+      />
       <PromotionDialog
         isOpen={pendingPromotion !== null}
         color={turn}

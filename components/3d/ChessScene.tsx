@@ -23,6 +23,10 @@ interface ParsedPiece {
   col: number
 }
 
+interface TrackedPiece extends ParsedPiece {
+  id: string
+}
+
 function parseFen(fen: string): ParsedPiece[] {
   const pieces: ParsedPiece[] = []
   const position = fen.split(' ')[0]
@@ -64,17 +68,65 @@ export function ChessScene({
   legalMoves,
   onSquareClick,
 }: ChessSceneProps) {
-  const pieces = useMemo(() => parseFen(fen), [fen])
+  const nextPieceId = useRef(0)
+  const prevTrackedRef = useRef<TrackedPiece[]>([])
+
+  const trackedPieces = useMemo(() => {
+    const newParsed = parseFen(fen)
+    const prev = prevTrackedRef.current
+    const result: TrackedPiece[] = []
+
+    const usedPrev = new Set<number>()
+    const usedNew = new Set<number>()
+
+    // Pass 1: exact match (same type, color, and position — piece didn't move)
+    for (let i = 0; i < newParsed.length; i++) {
+      for (let j = 0; j < prev.length; j++) {
+        if (usedPrev.has(j) || usedNew.has(i)) continue
+        const n = newParsed[i]
+        const p = prev[j]
+        if (p.type === n.type && p.color === n.color && p.row === n.row && p.col === n.col) {
+          result.push({ ...n, id: p.id })
+          usedPrev.add(j)
+          usedNew.add(i)
+          break
+        }
+      }
+    }
+
+    // Pass 2: same type+color but different position (piece moved)
+    for (let i = 0; i < newParsed.length; i++) {
+      if (usedNew.has(i)) continue
+      for (let j = 0; j < prev.length; j++) {
+        if (usedPrev.has(j)) continue
+        if (prev[j].type === newParsed[i].type && prev[j].color === newParsed[i].color) {
+          result.push({ ...newParsed[i], id: prev[j].id })
+          usedPrev.add(j)
+          usedNew.add(i)
+          break
+        }
+      }
+    }
+
+    // Pass 3: new pieces (e.g. promotion)
+    for (let i = 0; i < newParsed.length; i++) {
+      if (usedNew.has(i)) continue
+      result.push({ ...newParsed[i], id: `p${nextPieceId.current++}` })
+    }
+
+    prevTrackedRef.current = result
+    return result
+  }, [fen])
 
   const legalMoveSet = useMemo(() => new Set(legalMoves), [legalMoves])
 
   const pieceSquares = useMemo(() => {
     const set = new Set<string>()
-    for (const p of pieces) {
+    for (const p of trackedPieces) {
       set.add(coordsToSquare(p.row, p.col))
     }
     return set
-  }, [pieces])
+  }, [trackedPieces])
 
   const disabled = isAiThinking || isGameOver
 
@@ -94,7 +146,7 @@ export function ChessScene({
   return (
     <>
       <color attach="background" args={['#000000']} />
-      <PerspectiveCamera makeDefault position={[0, 8, -6]} fov={45} />
+      <PerspectiveCamera makeDefault position={[0, 10, -7.5]} fov={45} />
       <OrbitControls
         ref={controlsRef}
         enableRotate
@@ -137,14 +189,13 @@ export function ChessScene({
         })
       )}
 
-      {pieces.map((piece) => {
+      {trackedPieces.map((piece) => {
         const square = coordsToSquare(piece.row, piece.col)
         const isOwn = piece.color === turn
         const isSelected = selectedSquare === square
-
         return (
           <ChessPiece
-            key={`${square}-${piece.type}-${piece.color}`}
+            key={piece.id}
             type={piece.type}
             color={piece.color}
             position={[piece.col - 3.5, 0.075, piece.row - 3.5]}

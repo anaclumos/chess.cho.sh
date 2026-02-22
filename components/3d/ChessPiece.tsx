@@ -1,8 +1,10 @@
 'use client'
 
-import { useMemo } from 'react'
+import { useMemo, useRef } from 'react'
+import { useFrame } from '@react-three/fiber'
 import { createPieceGeometry } from './piece-profiles'
 import type { ThreeEvent } from '@react-three/fiber'
+import type { Mesh } from 'three'
 
 interface ChessPieceProps {
   type: string
@@ -12,6 +14,8 @@ interface ChessPieceProps {
   onClick: () => void
 }
 
+const LERP_SPEED = 10
+
 export function ChessPiece({
   type,
   color,
@@ -19,6 +23,8 @@ export function ChessPiece({
   isSelected,
   onClick,
 }: ChessPieceProps) {
+  const meshRef = useRef<Mesh>(null)
+  const initialized = useRef(false)
   const geometry = useMemo(() => createPieceGeometry(type), [type])
 
   const materialProps = useMemo(() => {
@@ -37,7 +43,29 @@ export function ChessPiece({
     return base
   }, [color, isSelected])
 
-  const y = isSelected ? position[1] + 0.15 : position[1]
+  const targetY = isSelected ? position[1] + 0.15 : position[1]
+
+  useFrame((_, delta) => {
+    if (!meshRef.current) return
+    const mesh = meshRef.current
+
+    if (!initialized.current) {
+      mesh.position.set(position[0], targetY, position[2])
+      mesh.scale.setScalar(0.001)
+      initialized.current = true
+      return
+    }
+
+    const t = Math.min(1, delta * LERP_SPEED)
+
+    mesh.position.x += (position[0] - mesh.position.x) * t
+    mesh.position.y += (targetY - mesh.position.y) * t
+    mesh.position.z += (position[2] - mesh.position.z) * t
+
+    mesh.scale.x += (1 - mesh.scale.x) * t
+    mesh.scale.y += (1 - mesh.scale.y) * t
+    mesh.scale.z += (1 - mesh.scale.z) * t
+  })
 
   const handlePointerDown = (e: ThreeEvent<PointerEvent>) => {
     e.stopPropagation()
@@ -46,8 +74,8 @@ export function ChessPiece({
 
   return (
     <mesh
+      ref={meshRef}
       geometry={geometry}
-      position={[position[0], y, position[2]]}
       castShadow
       receiveShadow
       onPointerDown={handlePointerDown}

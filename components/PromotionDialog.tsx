@@ -23,20 +23,20 @@ export function PromotionDialog({ isOpen, color, onSelect }: PromotionDialogProp
       role="dialog"
       aria-label="Choose promotion piece"
     >
-      <div className="flex flex-col gap-2 rounded-2xl border border-amber-900/20 bg-gradient-to-b from-amber-50 to-amber-100 p-5 shadow-2xl shadow-amber-900/30">
-        <p className="mb-1 text-center text-xs font-bold uppercase tracking-widest text-amber-800/70">
-          Promote pawn to
+      <div className="flex flex-col gap-2 rounded-lg border border-white/[0.06] bg-[#1b1b1f] p-4 shadow-2xl shadow-black/50">
+        <p className="mb-1 text-center text-[11px] font-medium uppercase tracking-widest text-[#7d7d85]">
+          Promote to
         </p>
-        <div className="flex gap-3">
+        <div className="flex gap-2">
           {PIECES.map(({ key, label, white, black }) => (
             <button
               type="button"
               key={key}
               onClick={() => onSelect(key)}
               aria-label={label}
-              className="flex h-16 w-16 items-center justify-center rounded-xl border-2 border-amber-200 bg-white/80 text-4xl shadow-md transition-all duration-150 hover:-translate-y-0.5 hover:border-amber-400 hover:bg-white hover:shadow-lg active:translate-y-0 active:shadow-sm"
+              className="flex h-14 w-14 items-center justify-center rounded-md border border-white/[0.06] bg-white/[0.03] text-3xl transition-all duration-120 hover:border-white/[0.12] hover:bg-white/[0.06] active:scale-95"
             >
-              <span className="drop-shadow-sm">
+              <span>
                 {color === 'w' ? white : black}
               </span>
             </button>

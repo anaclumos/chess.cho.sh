@@ -1,6 +1,9 @@
 'use client'
 
+import { useRef } from 'react'
+import { useFrame } from '@react-three/fiber'
 import type { ThreeEvent } from '@react-three/fiber'
+import type { Mesh } from 'three'
 
 interface BoardSquareProps {
   row: number
@@ -9,6 +12,46 @@ interface BoardSquareProps {
   isSelected: boolean
   hasPiece: boolean
   onClick: () => void
+}
+
+const SCALE_SPEED = 12
+
+function MoveDot() {
+  const ref = useRef<Mesh>(null)
+
+  useFrame((_, delta) => {
+    if (!ref.current) return
+    const t = Math.min(1, delta * SCALE_SPEED)
+    ref.current.scale.x += (1 - ref.current.scale.x) * t
+    ref.current.scale.y += (1 - ref.current.scale.y) * t
+    ref.current.scale.z += (1 - ref.current.scale.z) * t
+  })
+
+  return (
+    <mesh ref={ref} position={[0, 0.1, 0]} scale={0}>
+      <cylinderGeometry args={[0.15, 0.15, 0.02, 16]} />
+      <meshStandardMaterial color="#22c55e" transparent opacity={0.6} />
+    </mesh>
+  )
+}
+
+function CaptureRing() {
+  const ref = useRef<Mesh>(null)
+
+  useFrame((_, delta) => {
+    if (!ref.current) return
+    const t = Math.min(1, delta * SCALE_SPEED)
+    ref.current.scale.x += (1 - ref.current.scale.x) * t
+    ref.current.scale.y += (1 - ref.current.scale.y) * t
+    ref.current.scale.z += (1 - ref.current.scale.z) * t
+  })
+
+  return (
+    <mesh ref={ref} position={[0, 0.1, 0]} rotation={[-Math.PI / 2, 0, 0]} scale={0}>
+      <ringGeometry args={[0.35, 0.45, 32]} />
+      <meshStandardMaterial color="#ef4444" transparent opacity={0.5} side={2} />
+    </mesh>
+  )
 }
 
 export function BoardSquare({
@@ -41,28 +84,8 @@ export function BoardSquare({
         />
       </mesh>
 
-      {isLegalMove && !hasPiece && (
-        <mesh position={[0, 0.1, 0]}>
-          <cylinderGeometry args={[0.15, 0.15, 0.02, 16]} />
-          <meshStandardMaterial
-            color="#22c55e"
-            transparent
-            opacity={0.6}
-          />
-        </mesh>
-      )}
-
-      {isLegalMove && hasPiece && (
-        <mesh position={[0, 0.1, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-          <ringGeometry args={[0.35, 0.45, 32]} />
-          <meshStandardMaterial
-            color="#ef4444"
-            transparent
-            opacity={0.5}
-            side={2}
-          />
-        </mesh>
-      )}
+      {isLegalMove && !hasPiece && <MoveDot />}
+      {isLegalMove && hasPiece && <CaptureRing />}
     </group>
   )
 }
