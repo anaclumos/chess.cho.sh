@@ -11,6 +11,9 @@ import {
 import { Button } from '@/components/ui/button'
 import { Kbd } from '@/components/ui/kbd'
 import { cn } from '@/lib/utils'
+import { useTranslations, useLocale } from 'next-intl'
+import type { Locale } from '@/i18n/config'
+import { locales } from '@/i18n/config'
 import type { Move } from '@/lib/types'
 
 interface GameDrawerProps {
@@ -19,6 +22,12 @@ interface GameDrawerProps {
   history: Move[]
   onUndo: () => void
   onNewGame: () => void
+}
+
+function switchLocale(current: Locale) {
+  const next = locales.find((l) => l !== current) ?? locales[0]
+  document.cookie = `NEXT_LOCALE=${next}; path=/; max-age=${60 * 60 * 24 * 365}`
+  window.location.reload()
 }
 
 function DrawerAction({
@@ -60,6 +69,8 @@ export function GameDrawer({
   onUndo,
   onNewGame,
 }: GameDrawerProps) {
+  const t = useTranslations('GameDrawer')
+  const locale = useLocale() as Locale
   const moveCount = Math.floor(history.length / 2) + (history.length % 2)
   const hasHistory = history.length > 0
 
@@ -77,25 +88,30 @@ export function GameDrawer({
       <DrawerContent>
         <div className="mx-auto w-full max-w-sm">
           <DrawerHeader>
-            <DrawerTitle>Game</DrawerTitle>
+            <DrawerTitle>{t('title')}</DrawerTitle>
             {hasHistory && (
               <p className="text-sm text-muted-foreground">
-                {moveCount} move{moveCount !== 1 ? 's' : ''} played
+                {t('movesPlayed', { count: moveCount })}
               </p>
             )}
           </DrawerHeader>
           <div className="flex flex-col gap-0.5 px-4 pb-6">
             <DrawerAction
-              label="New Game"
+              label={t('newGame')}
               onClick={onNewGame}
               disabled={isAiThinking}
               destructive={hasHistory}
             />
             <DrawerAction
-              label="Undo"
+              label={t('undo')}
               kbd="⌘Z"
               onClick={onUndo}
               disabled={!canUndo}
+            />
+            <div className="my-1 h-px bg-border" />
+            <DrawerAction
+              label={t('language')}
+              onClick={() => switchLocale(locale)}
             />
           </div>
         </div>

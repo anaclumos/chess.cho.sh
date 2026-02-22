@@ -1,0 +1,50 @@
+{
+  "Metadata": {
+    "title": "체스",
+    "description": "3D 체스 게임"
+  },
+  "StatusBar": {
+    "white": "백",
+    "black": "흑",
+    "check": "체크",
+    "thinking": "생각 중…",
+    "move": "{moveNumber}수째",
+    "gameOver": {
+      "checkmate": "체크메이트 — {winner} 승리",
+      "stalemate": "스테일메이트",
+      "threefoldRepetition": "동형반복",
+      "fiftyMoveRule": "50수 규칙",
+      "insufficientMaterial": "기물 부족",
+      "default": "게임이 끝났어요"
+    }
+  },
+  "GameDrawer": {
+    "title": "게임",
+    "movesPlayed": "{count, plural, other {#수 진행했어요}}",
+    "newGame": "새 게임",
+    "undo": "되돌리기",
+    "language": "English"
+  },
+  "PromotionDialog": {
+    "title": "어떤 기물로 바꿀까요?",
+    "description": "폰을 승진시킬 기물을 골라 주세요",
+    "queen": "퀸",
+    "rook": "룩",
+    "bishop": "비숍",
+    "knight": "나이트"
+  },
+  "GameStatus": {
+    "checkmate": "체크메이트 — {winner} 이겼어요!",
+    "stalemate": "스테일메이트 — 비겼어요",
+    "threefoldRepetition": "동형반복으로 비겼어요",
+    "fiftyMoveRule": "50수 규칙으로 비겼어요",
+    "insufficientMaterial": "기물이 부족해 비겼어요",
+    "default": "게임이 끝났어요",
+    "check": "체크!",
+    "white": "백",
+    "black": "흑"
+  },
+  "MoveHistory": {
+    "noMoves": "아직 수를 두지 않았어요"
+  }
+}

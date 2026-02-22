@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useRef } from 'react'
+import { useTranslations } from 'next-intl'
 import type { Move } from '@/lib/types'
 
 interface MoveHistoryProps {
@@ -8,6 +9,7 @@ interface MoveHistoryProps {
 }
 
 export function MoveHistory({ history }: MoveHistoryProps) {
+  const t = useTranslations('MoveHistory')
   const bottomRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -16,7 +18,7 @@ export function MoveHistory({ history }: MoveHistoryProps) {
 
   if (history.length === 0) {
     return (
-      <div className="text-sm italic text-amber-700/50">No moves yet</div>
+      <div className="text-sm italic text-amber-700/50">{t('noMoves')}</div>
     )
   }
 

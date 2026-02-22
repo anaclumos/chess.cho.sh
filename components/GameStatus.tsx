@@ -1,5 +1,6 @@
 'use client'
 
+import { useTranslations } from 'next-intl'
 import type { GameOverReason } from '@/lib/types'
 
 interface GameStatusProps {
@@ -9,33 +10,26 @@ interface GameStatusProps {
   isInCheck: boolean
 }
 
-function getGameOverMessage(reason: GameOverReason, sideToMove: 'w' | 'b'): string {
-  const winner = sideToMove === 'w' ? 'Black' : 'White'
-
-  switch (reason) {
-    case 'checkmate':
-      return `Checkmate — ${winner} wins!`
-    case 'stalemate':
-      return 'Stalemate — Draw'
-    case 'threefold-repetition':
-      return 'Draw by Threefold Repetition'
-    case '50-move-rule':
-      return 'Draw by 50-Move Rule'
-    case 'insufficient-material':
-      return 'Draw by Insufficient Material'
-    default:
-      return 'Game Over'
-  }
-}
-
 export function GameStatus({
   isGameOver,
   gameOverReason,
   turn,
   isInCheck,
 }: GameStatusProps) {
+  const t = useTranslations('GameStatus')
+
   if (isGameOver && gameOverReason) {
     const isCheckmate = gameOverReason === 'checkmate'
+    const winner = turn === 'w' ? t('black') : t('white')
+
+    const reasonMap: Record<GameOverReason, string> = {
+      'checkmate': t('checkmate', { winner }),
+      'stalemate': t('stalemate'),
+      'threefold-repetition': t('threefoldRepetition'),
+      '50-move-rule': t('fiftyMoveRule'),
+      'insufficient-material': t('insufficientMaterial'),
+    }
+    const message = reasonMap[gameOverReason] ?? t('default')
 
     return (
       <output
@@ -45,7 +39,7 @@ export function GameStatus({
             : 'bg-amber-100/90 text-amber-800'
         }`}
       >
-        {getGameOverMessage(gameOverReason, turn)}
+        {message}
       </output>
     )
   }
@@ -55,7 +49,7 @@ export function GameStatus({
       <output
         className="block rounded-xl bg-orange-100/90 px-3 py-2 text-center text-sm font-semibold text-orange-700 shadow-lg backdrop-blur-sm"
       >
-        Check!
+        {t('check')}
       </output>
     )
   }

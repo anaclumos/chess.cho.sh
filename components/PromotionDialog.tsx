@@ -1,5 +1,6 @@
 'use client'
 
+import { useTranslations } from 'next-intl'
 import {
   Dialog,
   DialogContent,
@@ -16,13 +17,15 @@ interface PromotionDialogProps {
 }
 
 const PIECES = [
-  { key: 'q', label: 'Queen', white: '♕', black: '♛' },
-  { key: 'r', label: 'Rook', white: '♖', black: '♜' },
-  { key: 'b', label: 'Bishop', white: '♗', black: '♝' },
-  { key: 'n', label: 'Knight', white: '♘', black: '♞' },
-] as const
+  { key: 'q', labelKey: 'queen' as const, white: '♕', black: '♛' },
+  { key: 'r', labelKey: 'rook' as const, white: '♖', black: '♜' },
+  { key: 'b', labelKey: 'bishop' as const, white: '♗', black: '♝' },
+  { key: 'n', labelKey: 'knight' as const, white: '♘', black: '♞' },
+]
 
 export function PromotionDialog({ isOpen, color, onSelect }: PromotionDialogProps) {
+  const t = useTranslations('PromotionDialog')
+
   return (
     <Dialog open={isOpen}>
       <DialogContent
@@ -33,19 +36,19 @@ export function PromotionDialog({ isOpen, color, onSelect }: PromotionDialogProp
       >
         <DialogHeader>
           <DialogTitle className="text-center text-[11px] font-medium uppercase tracking-widest text-muted-foreground">
-            Promote to
+            {t('title')}
           </DialogTitle>
           <DialogDescription className="sr-only">
-            Choose a piece to promote your pawn to
+            {t('description')}
           </DialogDescription>
         </DialogHeader>
         <div className="flex gap-2">
-          {PIECES.map(({ key, label, white, black }) => (
+          {PIECES.map(({ key, labelKey, white, black }) => (
             <Button
               key={key}
               variant="outline"
               onClick={() => onSelect(key)}
-              aria-label={label}
+              aria-label={t(labelKey)}
               className="h-14 w-14 text-3xl"
             >
               {color === 'w' ? white : black}

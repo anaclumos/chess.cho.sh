@@ -1,5 +1,6 @@
 'use client'
 
+import { useTranslations } from 'next-intl'
 import { GameDrawer } from '@/components/GameDrawer'
 import { Progress } from '@/components/ui/progress'
 import type { Evaluation, GameOverReason, Move } from '@/lib/types'
@@ -16,24 +17,6 @@ interface StatusBarProps {
   onUndo: () => void
   onNewGame: () => void
   evaluation: Evaluation | null
-}
-
-function getGameOverLabel(reason: GameOverReason, turn: 'w' | 'b'): string {
-  const winner = turn === 'w' ? 'Black' : 'White'
-  switch (reason) {
-    case 'checkmate':
-      return `Checkmate — ${winner} wins`
-    case 'stalemate':
-      return 'Stalemate'
-    case 'threefold-repetition':
-      return 'Threefold Repetition'
-    case '50-move-rule':
-      return '50-Move Rule'
-    case 'insufficient-material':
-      return 'Insufficient Material'
-    default:
-      return 'Game Over'
-  }
 }
 
 function getMoveNumber(history: Move[]): number {
@@ -58,16 +41,30 @@ export function StatusBar({
   onNewGame,
   evaluation,
 }: StatusBarProps) {
+  const t = useTranslations('StatusBar')
   const moveNumber = getMoveNumber(history)
   const lastMove = getLastMove(history)
 
   const whitePercent = evaluation ? evalToWhitePercent(evaluation) : null
+
+  function getGameOverLabel(reason: GameOverReason): string {
+    const winner = turn === 'w' ? t('black') : t('white')
+    const reasonMap: Record<GameOverReason, string> = {
+      'checkmate': t('gameOver.checkmate', { winner }),
+      'stalemate': t('gameOver.stalemate'),
+      'threefold-repetition': t('gameOver.threefoldRepetition'),
+      '50-move-rule': t('gameOver.fiftyMoveRule'),
+      'insufficient-material': t('gameOver.insufficientMaterial'),
+    }
+    return reasonMap[reason] ?? t('gameOver.default')
+  }
+
   return (
     <div className="status-bar">
       <div className="status-bar-section">
         {isGameOver && gameOverReason ? (
           <span className="status-bar-item status-bar-game-over">
-            {getGameOverLabel(gameOverReason, turn)}
+            {getGameOverLabel(gameOverReason)}
           </span>
         ) : (
           <>
@@ -77,15 +74,15 @@ export function StatusBar({
                   turn === 'w' ? 'status-bar-dot-white' : 'status-bar-dot-black'
                 }`}
               />
-              {turn === 'w' ? 'White' : 'Black'}
+              {turn === 'w' ? t('white') : t('black')}
             </span>
             {isInCheck && (
-              <span className="status-bar-item status-bar-check">Check</span>
+              <span className="status-bar-item status-bar-check">{t('check')}</span>
             )}
             {isAiThinking && (
               <span className="status-bar-item status-bar-thinking">
                 <span className="status-bar-dot status-bar-dot-pulse" />
-                Thinking…
+                {t('thinking')}
               </span>
             )}
           </>
@@ -109,7 +106,7 @@ export function StatusBar({
           </span>
         )}
         <span className="status-bar-item status-bar-muted">
-          Move {moveNumber}
+          {t('move', { moveNumber })}
         </span>
         <GameDrawer
           canUndo={canUndo}
