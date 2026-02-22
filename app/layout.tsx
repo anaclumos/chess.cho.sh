@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import Script from "next/script";
 import { NextIntlClientProvider } from "next-intl";
 import { getLocale, getMessages, getTranslations } from "next-intl/server";
 import { NuqsAdapter } from "nuqs/adapters/next/app";
@@ -46,6 +47,11 @@ export default async function RootLayout({
         <NextIntlClientProvider messages={messages}>
           <NuqsAdapter>{children}</NuqsAdapter>
         </NextIntlClientProvider>
+        <Script
+          src="https://cdn.visitors.now/v.js"
+          data-token="baf69ee5-5291-4447-977e-a895c464950a"
+          strategy="afterInteractive"
+        />
       </body>
     </html>
   );
