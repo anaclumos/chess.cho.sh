@@ -53,6 +53,7 @@ export function GameClient() {
     newGame,
   } = useChessGame(urlFen)
   const pendingAiMove = useRef(urlFen.split(' ')[1] === 'b')
+  const prevHistoryLength = useRef(0)
   const [pendingPromotion, setPendingPromotion] = useState<{
     from: string
     to: string
@@ -160,6 +161,36 @@ export function GameClient() {
       cancelled = true
     }
   }, [fen, turn, isGameOver, setAiThinking, applyAiMove])
+
+  useEffect(() => {
+    if (history.length <= prevHistoryLength.current) {
+      prevHistoryLength.current = history.length
+      return
+    }
+    for (let i = prevHistoryLength.current; i < history.length; i++) {
+      const move = history[i]
+      visitors?.track('move', {
+        fen,
+        name: playerName || 'anonymous',
+        time: new Date().toISOString(),
+        san: move.san,
+        player: move.color === 'w' ? 'user' : 'ai',
+        move: i + 1,
+      })
+    }
+    prevHistoryLength.current = history.length
+  }, [history, fen, playerName])
+  useEffect(() => {
+    if (!isGameOver || gameOverReason !== 'checkmate') {
+      return
+    }
+    const winner = turn === 'w' ? 'ai' : 'user'
+    visitors?.track(winner === 'user' ? 'user_won' : 'ai_won', {
+      reason: gameOverReason,
+      moves: history.length,
+      name: playerName || 'anonymous',
+    })
+  }, [isGameOver, gameOverReason, turn, history.length, playerName])
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
